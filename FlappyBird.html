@@ -22,7 +22,7 @@
             #viewport {
               width: 100%; height: 100%; overflow: hidden;
               top: 0px; left: 0px; margin: 0;
-              background-color: lightblue;
+              background-color: #70C5CF;
               z-index: 0;
             }
 
@@ -30,9 +30,9 @@
               width: 34px;
               height: 24px;
               background-position: -312px -230px;
-              z-index: 2;
-              animation: cycle_sprites 300ms steps(1) infinite,
-                                move_bird 5s linear infinite;
+              z-index: 3;
+              animation: cycle_sprites 300ms steps(1) infinite/*,
+                          move_bird 5s linear infinite*/;
             }
 
             #start {
@@ -40,6 +40,25 @@
               width: 80px;
               height: 28px;
               z-index: 3;
+            }
+
+            .city {
+              background-position: -0px -410px;
+              width: 276px;
+              height: 200px;
+            }
+
+            #getready {
+              background-position: -118px -310px;
+              width: 288px;
+              height: 38px;
+            }
+
+            .floor {
+              background-position: -276px 0;
+              width: 224px;
+              height: 112px;
+              z-index: 2;
             }
 
             @keyframes cycle_sprites {
@@ -67,22 +86,42 @@
         {
           this.velocity = new Vec2();
           this.position = new Vec2();
-          this.reference = undefined;
+          this.dom = undefined;
         }
 
         function Resize()
         {
           viewportSize.x = $("#viewport").height();
           viewportSize.y = $("#viewport").width();
-          $("#start").css({"top": viewportSize.x * 0.5 - 40, "left": viewportSize.y * 0.5 - 14});
+          startBtn.css({"top": viewportSize.x * 0.5 - 40, "left": viewportSize.y * 0.5 - 14});
+
+          bird.position.y = viewportSize.y * 0.3;
+          bird.dom.css("left", bird.position.y);
+          bird.position.x = viewportSize.x * 0.5;
+          bird.dom.css("top", bird.position.x);
+
           console.log("resize!");
+        }
+
+        function togglePause()
+        {
+          gamePause = !gamePause;
+
+          if(gamePause){
+            startBtn.show();
+          } else {
+              startBtn.hide();
+          }
         }
 
         //some init stuff
         var bird = new Bird(),
             gamePause = false,
             viewportSize = new Vec2(),
-            startBtn;
+            viewport,
+            floor,
+            startBtn,
+            gameLoopInterval = undefined;
 
         //handler
         $(document).ready(function() {
@@ -92,9 +131,32 @@
         $(window).resize(Resize);
 
         function init(){
-          Resize();
-          bird.reference = $("#bird");
+          viewport = $("#viewport");
+          viewport.html(
+          "<div class='sprite' id='start'></div>"
+          +"<div class='sprite' id='bird'></div>"
+          +"<div id='' class='sprite city'></div>"
+          );
+
+          viewport.append("<div id='floor0' class='sprite floor'></div>");
+          floor = $("#floor0");
+          floor.deadzone = viewport.height() - floor.height();
+          floor.css("top", floor.deadzone);
+
+          var floorNumber = viewport.width()/floor.width();
+          console.log(floorNumber);
+          for(var i = 1; i < floorNumber; i++)
+          {
+            console.log("floor"+i+" created!");
+            viewport.append("<div id='floor" + i + "' class='sprite floor'></div>");
+            $("#floor"+i).css("left", floor.width() * i);
+            $("#floor"+i).css("top", floor.deadzone);
+          }
+
+          bird.dom = $("#bird");
           startBtn = $("#start");
+
+          Resize();
 
           startBtn.on("click", startGame);
 
@@ -103,7 +165,9 @@
             //console.log(event);
             switch(event.key)
             {
-              case "Escape": gamePause = !gamePause;
+              case "Escape": togglePause();
+              break;
+              case "r": init();
               break;
             }
           });
@@ -118,14 +182,14 @@
 
         function startGame()
         {
-          startBtn.hide();
-
           $("#viewport").on("click", click);
 
           bird.position.x = viewportSize.x * 0.5;
-          bird.velocity.x = 1;
 
-          setTimeout(gameLoop, 32);
+          togglePause();
+
+          if(gameLoopInterval == undefined)
+            gameLoopInterval = setInterval(gameLoop, 32);
         }
 
         function click()
@@ -136,8 +200,6 @@
 
         function gameLoop()
         {
-          setTimeout(gameLoop, 32);
-
           if(gamePause)
             return;
 
@@ -147,24 +209,13 @@
           bird.position.x += bird.velocity.x;
 
           //logic
-          if(bird.position.x >= 500)
-            bird.position.x = 0;
+          if(bird.position.x + bird.dom.height() >= floor.deadzone)
+            togglePause();
 
-          bird.reference.css("top", bird.position.x);
-          //bird.reference.animate({top: bird.position.x}, 32);
+          bird.dom.css("top", bird.position.x);
+          //bird.dom.animate({top: bird.position.x}, 32);
         }
       </script>
-        <div id="viewport">
-            <div class="sprite" id="start"></div>
-            <div class="sprite" id="bird"></div>
-            <div id="sprite1" class="sprite" style="
-                left:0px;
-                top:300px;
-                background-position: -0px -410px;
-                width: 276px;
-                height: 200px;
-                z-index: 1;
-            "></div>
-        </div>
+        <div id="viewport"></div>
     </body>
 </html>
