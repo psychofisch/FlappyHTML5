@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
+        <script src="jquery-3.2.1.min.js"></script>
+        <style type="text/css">
+            body {
+              margin:0; padding: 0; border:0; background: black;
+                overflow: hidden
+            }
+            div {
+              position: absolute; margin: 0; padding: 0; border: 0;
+                outline:0; color:white;
+            }
+            #viewport {
+              width: 100%; height: 100%; overflow: hidden;
+              top: 0px; left: 0px; margin: 0;
+            }
+            #bird {
+              left: 100px;
+              top: 100px;
+              width: 34px;
+              height: 24px;
+              background-image:url(sheet.png);
+              background-position: -312px -230px;
+              z-index: 0;
+              animation: cycle_sprites 300ms steps(1) infinite,
+                                move_bird 5s linear infinite;
+            }
+            @keyframes cycle_sprites {
+                0% { background-position: -312px -230px; }
+                33.33% { background-position: -312px -256px;}
+                66.66% { background-position: -312px -282px;}
+            }
+            @keyframes move_bird {
+                from { left: 0px}
+                to { left: 500px}
+            }
+        </style>
+    </head>
+    <body>
+      <script type="text/javascript">
+        window.onload = gameLoop;
+
+        var bird = new Bird();
+
+        function Vec2()
+        {
+          this.x = 0;
+          this.y = 0;
+        }
+
+        function Bird()
+        {
+          this.velocity = new Vec2();
+          this.position = new Vec2();
+        }
+
+        function gameLoop()
+        {
+          //physics
+          bird.position.x += bird.velocity.x;
+
+          //logic
+          if(bird.position.x >= 500)
+            bird.position.x = 0;
+
+          bird.position.x += 10;
+          $("#bird").css("top", bird.position.x);
+          setTimeout(gameLoop, 16);
+        }
+      </script>
+        <div id="viewport">
+            <div id="bird"></div>
+        </div>
+        <div style="
+            left:0px;
+            top:300px;
+            background-image:url(sheet.png);
+            background-position: -0px -410px;
+            width: 276px;
+            height: 200px;
+            z-index: -1;
+        "></div>
+    </body>
+</html>
