@@ -120,6 +120,9 @@
             viewportSize = new Vec2(),
             viewport,
             floor,
+            floors,
+            city,
+            cities,
             startBtn,
             gameLoopInterval = undefined;
 
@@ -135,24 +138,48 @@
           viewport.html(
           "<div class='sprite' id='start'></div>"
           +"<div class='sprite' id='bird'></div>"
-          +"<div id='' class='sprite city'></div>"
+          +"<div id='city0' class='sprite city'></div>"
+          +"<div id='floor0' class='sprite floor'></div>"
           );
 
-          viewport.append("<div id='floor0' class='sprite floor'></div>");
+          //floors
+          //viewport.append("<div id='floor0' class='sprite floor'></div>");
           floor = $("#floor0");
           floor.deadzone = viewport.height() - floor.height();
           floor.css("top", floor.deadzone);
 
           var floorNumber = viewport.width()/floor.width();
-          console.log(floorNumber);
-          for(var i = 1; i < floorNumber; i++)
+          for(var i = 0; i < floorNumber; i++)
           {
-            console.log("floor"+i+" created!");
-            viewport.append("<div id='floor" + i + "' class='sprite floor'></div>");
-            $("#floor"+i).css("left", floor.width() * i);
-            $("#floor"+i).css("top", floor.deadzone);
+            //console.log("floor"+i+" created!");
+            viewport.append("<div class='sprite floor'></div>");
           }
 
+          floors = $(".floor");
+          floors.each(function(i){
+            $(this).css("left", floor.width() * i);
+            $(this).css("top", floor.deadzone);
+          });
+
+          //cities
+          city = $("#city0");
+          city.yStart = floor.deadzone - city.height();
+          city.css("top", city.yStart);
+
+          var cityNumber = viewport.width()/city.width();
+          for(var i = 0; i < cityNumber; i++)
+          {
+            //console.log("city"+i+" created!");
+            viewport.append("<div class='sprite city'></div>");
+          }
+
+          cities = $(".city");
+          cities.each(function(i){
+            $(this).css("left", city.width() * i);
+            $(this).css("top", city.yStart);
+          });
+
+          //inits
           bird.dom = $("#bird");
           startBtn = $("#start");
 
