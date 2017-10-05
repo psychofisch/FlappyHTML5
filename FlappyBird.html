@@ -116,7 +116,7 @@
 
         //some init stuff
         var bird = new Bird(),
-            gamePause = false,
+            gamePause = true,
             viewportSize = new Vec2(),
             viewport,
             floor,
@@ -124,7 +124,9 @@
             city,
             cities,
             startBtn,
-            gameLoopInterval = undefined;
+            gameLoopInterval = undefined,
+            lastFrame = 0,
+            deltaTime;
 
         //handler
         $(document).ready(function() {
@@ -215,25 +217,53 @@
 
           togglePause();
 
-          if(gameLoopInterval == undefined)
-            gameLoopInterval = setInterval(gameLoop, 32);
+          window.requestAnimationFrame(gameLoop);
+          //gameLoop(0);
         }
 
         function click()
         {
           if(!gamePause)
-            bird.velocity.x = -15;
+            bird.velocity.x = -50;
         }
 
-        function gameLoop()
+        function gameLoop(timeAlive)
         {
           if(gamePause)
             return;
 
+          //console.log(deltaTime);
+
+          if(lastFrame == 0 || lastFrame == undefined)
+          {
+            lastFrame = timeAlive;
+            window.requestAnimationFrame(gameLoop);
+            return;
+          }
+
+          deltaTime = (timeAlive - lastFrame)*0.01;
+          lastFrame = timeAlive;
+
+          if(deltaTime > 0.1)
+            deltaTime = 0.1;
+
+          //setTimeout(moveBackground, 1000);
+          //move background
+          var movePercentage = (timeAlive%1000)/1000;
+          cities.each(function(i){
+            //$(this).css("left", city.width() * i);
+            $(this).css("left", city.width()*i - city.width()*movePercentage);
+          });
+
+          floors.each(function(i){
+            //$(this).css("left", city.width() * i);
+            $(this).css("left", floor.width()*i - floor.width()*movePercentage);
+          });
+          
           //physics
           if(bird.velocity.x <= 100)
-            bird.velocity.x += 1;
-          bird.position.x += bird.velocity.x;
+            bird.velocity.x += 10*deltaTime;
+          bird.position.x += bird.velocity.x * deltaTime;
 
           //logic
           if(bird.position.x + bird.dom.height() >= floor.deadzone)
@@ -241,6 +271,8 @@
 
           bird.dom.css("top", bird.position.x);
           //bird.dom.animate({top: bird.position.x}, 32);
+
+          window.requestAnimationFrame(gameLoop);
         }
       </script>
         <div id="viewport"></div>
