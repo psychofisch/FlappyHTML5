@@ -61,6 +61,45 @@
               z-index: 2;
             }
 
+            .pipeN {
+              /*251, 0, 26, 200*/
+              background-position: -502px 0;
+              width: 52px;
+              height: 400px;
+            }
+
+            .pipeS {
+              /*277, 0, 26, 200*/
+              background-position: -554px 0;
+              width: 52px;
+              height: 400px;
+            }
+
+            .numberS {
+              /* 0, 177, 6,  7 */
+              background-position: 0 -354px;
+              width: 12px;
+              height: 14px;
+            }
+
+            .numberB {
+              /* 0, 177, 6,  7 */
+              background-position: 0 -376px;
+              width: 14px;
+              height: 20px;
+            }
+
+            .hidden {
+              display: none;
+            }
+
+            #scorefield {
+              margin-top: 10%;
+              margin-left: 50%;
+              transform: scale(2);
+              /*text-align: center;*/
+            }
+
             @keyframes cycle_sprites {
                 0% { background-position: -312px -230px; }
                 33.33% { background-position: -312px -256px;}
@@ -91,16 +130,37 @@
 
         function Resize()
         {
-          viewportSize.x = $("#viewport").height();
-          viewportSize.y = $("#viewport").width();
-          startBtn.css({"top": viewportSize.x * 0.5 - 40, "left": viewportSize.y * 0.5 - 14});
+          viewportSize.x = $("#viewport").width();
+          viewportSize.y = $("#viewport").height();
+          startBtn.css({"top": viewportSize.y * 0.5 - 40, "left": viewportSize.x * 0.5 - 14});
 
-          bird.position.y = viewportSize.y * 0.3;
-          bird.dom.css("left", bird.position.y);
-          bird.position.x = viewportSize.x * 0.5;
-          bird.dom.css("top", bird.position.x);
+          bird.position.x = viewportSize.x * 0.3;
+          bird.dom.css("left", bird.position.x);
+          bird.position.y = viewportSize.y * 0.5;
+          bird.dom.css("top", bird.position.y);
 
           console.log("resize!");
+        }
+
+        function createPipe(id, slot)
+        {
+          if(slot < 1)
+            slot = 1;
+          else if(slot > 3)
+            slot = 3;
+          console.log("pipe '" + id + "' created");
+          viewport.append("<div class='hidden' id='"+id+"'><div class='sprite pipeN' id='"+id+"N'></div><div class='sprite pipeS' id='"+id+"S'></div></div>");
+          var pipe = $("#"+id);
+          var pipeN = $("#"+id+"N");
+          var pipeS = $("#"+id+"S");
+          var gap = 0.15;
+          var usable = floor.deadzone;
+          var positionY = (usable/4)*slot;
+          pipeN.css("top", positionY+(usable*gap));
+          pipeS.css("top", -pipeS.height()+positionY-(usable*gap));
+          pipe.css("left", viewport.width());
+          pipe.removeClass("hidden");
+          return pipe;
         }
 
         function togglePause()
@@ -125,8 +185,13 @@
             cities,
             startBtn,
             gameLoopInterval = undefined,
+            startFrame = undefined,
             lastFrame = 0,
-            deltaTime;
+            deltaTime,
+            distance = 0,
+            numberProto,
+            scorefield,
+            pipes = [];
 
         //handler
         $(document).ready(function() {
@@ -139,9 +204,11 @@
           viewport = $("#viewport");
           viewport.html(
           "<div class='sprite' id='start'></div>"
+          +"<div class='' id='scorefield'></div>"
           +"<div class='sprite' id='bird'></div>"
           +"<div id='city0' class='sprite city'></div>"
           +"<div id='floor0' class='sprite floor'></div>"
+          +"<div id='numberProto' class='sprite numberS hidden'></div>"
           );
 
           //floors
@@ -184,8 +251,16 @@
           //inits
           bird.dom = $("#bird");
           startBtn = $("#start");
-
+          numberProto = $("#numberProto");
+          scorefield = $("#scorefield");
           Resize();
+
+          pipes[0] = createPipe("pipe0", 1);
+          pipes[1] = createPipe("pipe1", 2);
+          pipes[2] = createPipe("pipe2", 3);
+
+          scorefield.append("<div class='sprite numberB' id='score0'></div>");
+          //$("score0").css("background-position", numberProto.css("background-position"));
 
           startBtn.on("click", startGame);
 
@@ -213,7 +288,7 @@
         {
           $("#viewport").on("click", click);
 
-          bird.position.x = viewportSize.x * 0.5;
+          bird.position.y = viewportSize.y * 0.5;
 
           togglePause();
 
@@ -224,7 +299,7 @@
         function click()
         {
           if(!gamePause)
-            bird.velocity.x = -50;
+            bird.velocity.y = -5;
         }
 
         function gameLoop(timeAlive)
@@ -234,22 +309,28 @@
 
           //console.log(deltaTime);
 
-          if(lastFrame == 0 || lastFrame == undefined)
+          if(startFrame == undefined)
           {
-            lastFrame = timeAlive;
-            window.requestAnimationFrame(gameLoop);
-            return;
+            startFrame = timeAlive;
           }
 
+          // if(lastFrame == 0 || lastFrame == undefined)
+          // {
+          //   lastFrame = timeAlive;
+          //   window.requestAnimationFrame(gameLoop);
+          //   return;
+          // }
+
+          timeAlive -= startFrame;
           deltaTime = (timeAlive - lastFrame)*0.01;
           lastFrame = timeAlive;
 
           if(deltaTime > 0.1)
             deltaTime = 0.1;
 
-          //setTimeout(moveBackground, 1000);
           //move background
-          var movePercentage = (timeAlive%1000)/1000;
+          var speedMultiplier = 1.0;
+          var movePercentage = ((timeAlive*speedMultiplier)%1000)/1000;
           cities.each(function(i){
             //$(this).css("left", city.width() * i);
             $(this).css("left", city.width()*i - city.width()*movePercentage);
@@ -259,17 +340,34 @@
             //$(this).css("left", city.width() * i);
             $(this).css("left", floor.width()*i - floor.width()*movePercentage);
           });
-          
+
+          var pipeOffset = 0.3 * viewportSize.x;
+          var floorMove = floor.width()*speedMultiplier*timeAlive/1000;
+          pipes[0].css("left", viewportSize.x - (floorMove%viewport.width()));
+          pipes[1].css("left", viewportSize.x + (pipeOffset) - floorMove);
+          pipes[2].css("left", viewportSize.x + (pipeOffset * 2) - floorMove);
+
+          if(viewportSize.x - floorMove+52 < 0)
+          {
+            console.log("boom!");
+            pipes[0].remove();
+            $("#pipe1").attr("id", "pipe0");
+            $("#pipe2").attr("id", "pipe1");
+            pipes[0] = $("#pipe0");
+            pipes[1] = $("#pipe1");
+            pipes[2] = createPipe("pipe2");
+          }
+
           //physics
-          if(bird.velocity.x <= 100)
-            bird.velocity.x += 10*deltaTime;
-          bird.position.x += bird.velocity.x * deltaTime;
+          if(bird.velocity.y <= 100)
+            bird.velocity.y += 1*deltaTime;
+          bird.position.y += bird.velocity.y;
 
           //logic
-          if(bird.position.x + bird.dom.height() >= floor.deadzone)
+          if(bird.position.y + bird.dom.height() >= floor.deadzone)
             togglePause();
 
-          bird.dom.css("top", bird.position.x);
+          bird.dom.css("top", bird.position.y);
           //bird.dom.animate({top: bird.position.x}, 32);
 
           window.requestAnimationFrame(gameLoop);
