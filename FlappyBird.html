@@ -144,12 +144,15 @@
 
         function createPipe(id, slot)
         {
+          if(slot == undefined)
+            slot = Math.floor(Math.random()*3);
+          slot++;
           if(slot < 1)
             slot = 1;
           else if(slot > 3)
             slot = 3;
           console.log("pipe '" + id + "' created");
-          viewport.append("<div class='hidden' id='"+id+"'><div class='sprite pipeN' id='"+id+"N'></div><div class='sprite pipeS' id='"+id+"S'></div></div>");
+          viewport.append("<div class='hidden pipe' id='"+id+"'><div class='sprite pipeN' id='"+id+"N'></div><div class='sprite pipeS' id='"+id+"S'></div></div>");
           var pipe = $("#"+id);
           var pipeN = $("#"+id+"N");
           var pipeS = $("#"+id+"S");
@@ -221,30 +224,33 @@
           for(var i = 0; i < floorNumber; i++)
           {
             //console.log("floor"+i+" created!");
-            viewport.append("<div class='sprite floor'></div>");
+            viewport.append("<div id='floor"+(i+1)+"' class='sprite floor'></div>");
           }
 
           floors = $(".floor");
           floors.each(function(i){
-            $(this).css("left", floor.width() * i);
+            floors[i].position = floor.width() * i;
+            $(this).css("left", floors[i].position);
             $(this).css("top", floor.deadzone);
           });
 
           //cities
           city = $("#city0");
           city.yStart = floor.deadzone - city.height();
+          city.position = 0;
           city.css("top", city.yStart);
 
           var cityNumber = viewport.width()/city.width();
           for(var i = 0; i < cityNumber; i++)
           {
             //console.log("city"+i+" created!");
-            viewport.append("<div class='sprite city'></div>");
+            viewport.append("<div id='city"+(i+1)+"' class='sprite city'></div>");
           }
 
           cities = $(".city");
           cities.each(function(i){
-            $(this).css("left", city.width() * i);
+            cities[i].position = city.width() * i;
+            $(this).css("left", cities[i].position);
             $(this).css("top", city.yStart);
           });
 
@@ -255,9 +261,12 @@
           scorefield = $("#scorefield");
           Resize();
 
-          pipes[0] = createPipe("pipe0", 1);
-          pipes[1] = createPipe("pipe1", 2);
-          pipes[2] = createPipe("pipe2", 3);
+          for(var i = 0; i < 3; i++)
+          {
+            pipes[i] = {};
+            pipes[i].dom = createPipe("pipe"+i);
+            pipes[i].position = viewport.width() + (52*5*i);
+          }
 
           scorefield.append("<div class='sprite numberB' id='score0'></div>");
           //$("score0").css("background-position", numberProto.css("background-position"));
@@ -292,8 +301,9 @@
 
           togglePause();
 
+          //startFrame = undefined;
+
           window.requestAnimationFrame(gameLoop);
-          //gameLoop(0);
         }
 
         function click()
@@ -306,8 +316,6 @@
         {
           if(gamePause)
             return;
-
-          //console.log(deltaTime);
 
           if(startFrame == undefined)
           {
@@ -322,40 +330,67 @@
           // }
 
           timeAlive -= startFrame;
-          deltaTime = (timeAlive - lastFrame)*0.01;
+          deltaTime = (timeAlive - lastFrame)*0.01;//ms to s conversion
           lastFrame = timeAlive;
 
           if(deltaTime > 0.1)
             deltaTime = 0.1;
 
           //move background
-          var speedMultiplier = 1.0;
-          var movePercentage = ((timeAlive*speedMultiplier)%1000)/1000;
+          var citySpeedMultiplier = 5;
           cities.each(function(i){
             //$(this).css("left", city.width() * i);
-            $(this).css("left", city.width()*i - city.width()*movePercentage);
+            cities[i].position -= deltaTime*citySpeedMultiplier;
+            $(this).css("left", cities[i].position);
           });
 
+          if(cities[0].position + city.width() < 0)
+          {
+            cities.each(function(i){
+              //$(this).css("left", city.width() * i);
+              cities[i].position = city.width() * i;
+            });
+          }
+
+          //move active elements
+          var activeSpeedMultiplier = 20;
           floors.each(function(i){
             //$(this).css("left", city.width() * i);
-            $(this).css("left", floor.width()*i - floor.width()*movePercentage);
+            floors[i].position -= deltaTime*activeSpeedMultiplier;
+            $(this).css("left", floors[i].position);
           });
 
-          var pipeOffset = 0.3 * viewportSize.x;
-          var floorMove = floor.width()*speedMultiplier*timeAlive/1000;
-          pipes[0].css("left", viewportSize.x - (floorMove%viewport.width()));
-          pipes[1].css("left", viewportSize.x + (pipeOffset) - floorMove);
-          pipes[2].css("left", viewportSize.x + (pipeOffset * 2) - floorMove);
+          if(floors[0].position + floor.width() < 0)
+          {
+            floors.each(function(i){
+              //$(this).css("left", city.width() * i);
+              floors[i].position = floor.width() * i;
+            });
+          }
 
-          if(viewportSize.x - floorMove+52 < 0)
+          var pipeOffset = 0.3 * viewportSize.x;
+          var floorMove = activeSpeedMultiplier*deltaTime;
+          for(var i = 0; i < pipes.length; i++)
+          {
+            pipes[i].position -= floorMove;
+            pipes[i].dom.css("left", pipes[i].position);
+          }
+
+          if(pipes[0].position+52 < 0)
           {
             console.log("boom!");
-            pipes[0].remove();
-            $("#pipe1").attr("id", "pipe0");
-            $("#pipe2").attr("id", "pipe1");
-            pipes[0] = $("#pipe0");
-            pipes[1] = $("#pipe1");
-            pipes[2] = createPipe("pipe2");
+            pipes[0].dom.remove();
+            for(var i = 0; i < pipes.length - 1; i++)
+            {
+              if($("#pipe"+(i+1)) == undefined)
+                debugger;
+              $("#pipe"+(i+1)).attr("id", "pipe"+i);
+              pipes[i].dom = $("#pipe"+i);
+              pipes[i].position = pipes[i+1].position;
+            }
+
+            pipes[pipes.length - 1].dom = createPipe("pipe"+(pipes.length - 1));
+            pipes[pipes.length - 1].position = 52 * 5 * pipes.length - 52;
           }
 
           //physics
