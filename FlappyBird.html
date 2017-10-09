@@ -144,6 +144,7 @@
 
         function createPipe(id, slot)
         {
+          debugger;
           if(slot == undefined)
             slot = Math.floor(Math.random()*3);
           slot++;
@@ -295,6 +296,8 @@
 
         function startGame()
         {
+          init();
+
           $("#viewport").on("click", click);
 
           bird.position.y = viewportSize.y * 0.5;
@@ -353,7 +356,7 @@
           }
 
           //move active elements
-          var activeSpeedMultiplier = 20;
+          var activeSpeedMultiplier = 50;
           floors.each(function(i){
             //$(this).css("left", city.width() * i);
             floors[i].position -= deltaTime*activeSpeedMultiplier;
@@ -380,6 +383,8 @@
           {
             console.log("boom!");
             pipes[0].dom.remove();
+            //pipes = pipes.slice(1,pipes.length);
+            //debugger;
             for(var i = 0; i < pipes.length - 1; i++)
             {
               if($("#pipe"+(i+1)) == undefined)
@@ -389,8 +394,11 @@
               pipes[i].position = pipes[i+1].position;
             }
 
-            pipes[pipes.length - 1].dom = createPipe("pipe"+(pipes.length - 1));
-            pipes[pipes.length - 1].position = 52 * 5 * pipes.length - 52;
+            pipes[pipes.length-1].dom = createPipe("pipe"+(pipes.length - 1));
+            pipes[pipes.length-1].position = 52 * 5 * pipes.length - 52;
+
+            console.log(pipes.length);
+            console.log(pipes);
           }
 
           //physics
