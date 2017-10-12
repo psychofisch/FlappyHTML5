@@ -87,6 +87,9 @@
               background-position: 0 -376px;
               width: 14px;
               height: 20px;
+              display: inline-block;
+              position: relative;
+              margin-left: 3px;
             }
 
             .hidden {
@@ -97,6 +100,7 @@
               margin-top: 10%;
               margin-left: 50%;
               transform: scale(2);
+              z-index: 2;
               /*text-align: center;*/
             }
 
@@ -149,7 +153,7 @@
         function setPipeSlot(id, slot)
         {
           if(slot == undefined)
-            slot = Math.floor(Math.random()*3);
+            slot = Math.floor(Math.random()*5);
           slot++;
           if(slot < 1)
             slot = 1;
@@ -162,7 +166,7 @@
           var pipeN = $("#"+id+"N");
           var pipeS = $("#"+id+"S");
           var gap = 0.2;
-          var usable = floor.deadzone;
+          var usable = floor.deadzone - viewport.height()*0.1;
           var positionY = (usable/4)*slot;
           pipeN.css("top", positionY+(usable*gap));
           pipeS.css("top", -pipeS.height()+positionY-(usable*gap));
@@ -209,7 +213,8 @@
             numberProto,
             scorefield,
             pipes = [],
-            randomNr = [];
+            randomNr = [],
+            pipeDistance = 52 * 10;
 
         //handler
         $(document).ready(function() {
@@ -276,15 +281,9 @@
           scorefield = $("#scorefield");
           Resize();
 
-          for(var i = 0; i < 3; i++)
-          {
-            pipes[i] = {};
-            pipes[i].dom = createPipe("pipe"+i);
-            pipes[i].position = viewport.width() + (52*5*i);
-          }
-
+          scorefield.append("<div class='sprite numberB' id='score2'></div>");
+          scorefield.append("<div class='sprite numberB' id='score1'></div>");
           scorefield.append("<div class='sprite numberB' id='score0'></div>");
-          //$("score0").css("background-position", numberProto.css("background-position"));
 
           startBtn.on("click", startGame);
 
@@ -316,6 +315,17 @@
 
           bird.position.y = viewportSize.y * 0.5;
 
+          distance = 0;
+          for(var i = 0; i < 3; i++)
+          {
+            if(pipes.length < 3)
+            {
+              pipes[i] = {};
+              pipes[i].dom = createPipe("pipe"+i);
+            }
+            pipes[i].position = viewport.width() + (pipeDistance*i);
+          }
+
           togglePause();
 
           //startFrame = undefined;
@@ -327,7 +337,7 @@
         {
           if(!gamePause)
           {
-            bird.velocity.y = -10;
+            bird.velocity.y = -5;
             console.log("Jump!");
           }
           else {
@@ -362,7 +372,6 @@
           //move background
           var citySpeedMultiplier = 5;
           cities.each(function(i){
-            //$(this).css("left", city.width() * i);
             cities[i].position -= deltaTime*citySpeedMultiplier;
             $(this).css("left", cities[i].position);
           });
@@ -370,7 +379,6 @@
           if(cities[0].position + city.width() < 0)
           {
             cities.each(function(i){
-              //$(this).css("left", city.width() * i);
               cities[i].position = city.width() * i;
             });
           }
@@ -378,7 +386,6 @@
           //move active elements
           var activeSpeedMultiplier = 50;
           floors.each(function(i){
-            //$(this).css("left", city.width() * i);
             floors[i].position -= deltaTime*activeSpeedMultiplier;
             $(this).css("left", floors[i].position);
           });
@@ -386,7 +393,6 @@
           if(floors[0].position + floor.width() < 0)
           {
             floors.each(function(i){
-              //$(this).css("left", city.width() * i);
               floors[i].position = floor.width() * i;
             });
           }
@@ -400,36 +406,50 @@
 
             if(pipes[i].position+52 < 0)
             {
-              pipes[i].position = 52 * 5 * pipes.length - 52;
+              pipes[i].position = pipeDistance * pipes.length - 52;
               setPipeSlot("pipe"+i);
             }
           }
 
           //physics
           if(bird.velocity.y <= 100)
-            bird.velocity.y += 4*deltaTime;
+            bird.velocity.y += 2*deltaTime;
 
           //logic
+          distance += floorMove;
+
           if(bird.position.y + bird.dom.height() >= floor.deadzone)
-            bird.velocity.y = 0;
-            //togglePause();
+          {
+            //bird.velocity.y = 0;
+            togglePause();
+          }
 
           for(var i = 0; i < pipes.length; i++)
           {
             if(bird.position.x > pipes[i].position
-              && bird.position.x < pipes[i].position + pipes[i].dom.children(0).width()
-              && (bird.position.y > pipes[i].dom.children()[0].position().top
-              || bird.position.y < pipes[i].dom.children()[1].position().top + pipes[i].dom.children()[1].height())
-            )
+              && bird.position.x + bird.dom.width() < pipes[i].position + pipes[i].dom.children(0).width()
+              && (bird.position.y > pipes[i].dom.children(".pipeN").position().top
+              || bird.position.y < pipes[i].dom.children(".pipeS").position().top + pipes[i].dom.children(".pipeS").height()))
+            {
+              togglePause();
               console.log("bomp");
               //(pipes[i].dom.children(0).position.top
+            }
           }
 
           bird.position.y += bird.velocity.y;
           bird.dom.css("top", bird.position.y);
           //bird.dom.animate({top: bird.position.x}, 32);
 
-          $("#debug").html(randomNr[1] + ":" + randomNr[2] + ":" + randomNr[3]);
+          //Score
+          var score = Math.max(0, Math.floor((distance-bird.dom.width()*2)/pipeDistance));
+          var score0 = score.toString()[score.toString().length-1];
+          var score1 = score.toString()[score.toString().length-2];
+          var score2 = score.toString()[score.toString().length-3];
+          scorefield.children("#score0").css("background-position-x", (score0)*-16);
+          scorefield.children("#score1").css("background-position-x", (score1)*-16);
+          scorefield.children("#score2").css("background-position-x", (score2)*-16);
+          $("#debug").html(score2 + ":" + score1 + ":" + score0);
 
           window.requestAnimationFrame(gameLoop);
         }
