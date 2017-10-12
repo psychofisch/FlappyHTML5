@@ -140,7 +140,7 @@
         {
           viewportSize.x = $("#viewport").width();
           viewportSize.y = $("#viewport").height();
-          startBtn.css({"top": viewportSize.y * 0.5 - 40, "left": viewportSize.x * 0.5 - 14});
+          startBtn.css({"top": viewportSize.y * 0.5 - 40, "left": viewportSize.x * 0.5 - 28});
 
           bird.position.x = viewportSize.x * 0.3;
           bird.dom.css("left", bird.position.x);
@@ -214,7 +214,7 @@
             scorefield,
             pipes = [],
             randomNr = [],
-            pipeDistance = 52 * 10;
+            pipeDistance = 52 * 5;
 
         //handler
         $(document).ready(function() {
@@ -284,6 +284,7 @@
           scorefield.append("<div class='sprite numberB' id='score2'></div>");
           scorefield.append("<div class='sprite numberB' id='score1'></div>");
           scorefield.append("<div class='sprite numberB' id='score0'></div>");
+          scorefield.css("left", -scorefield.width()/2);
 
           startBtn.on("click", startGame);
 
@@ -325,6 +326,10 @@
             }
             pipes[i].position = viewport.width() + (pipeDistance*i);
           }
+
+          scorefield.children("#score0").css("background-position-x", "");
+          scorefield.children("#score1").css("background-position-x", "");
+          scorefield.children("#score2").css("background-position-x", "");
 
           togglePause();
 
@@ -384,7 +389,7 @@
           }
 
           //move active elements
-          var activeSpeedMultiplier = 50;
+          var activeSpeedMultiplier = 30;
           floors.each(function(i){
             floors[i].position -= deltaTime*activeSpeedMultiplier;
             $(this).css("left", floors[i].position);
@@ -442,14 +447,13 @@
           //bird.dom.animate({top: bird.position.x}, 32);
 
           //Score
-          var score = Math.max(0, Math.floor((distance-bird.dom.width()*2)/pipeDistance));
+          var score = Math.max(0, Math.floor((distance)/pipeDistance));
           var score0 = score.toString()[score.toString().length-1];
           var score1 = score.toString()[score.toString().length-2];
           var score2 = score.toString()[score.toString().length-3];
           scorefield.children("#score0").css("background-position-x", (score0)*-16);
           scorefield.children("#score1").css("background-position-x", (score1)*-16);
           scorefield.children("#score2").css("background-position-x", (score2)*-16);
-          $("#debug").html(score2 + ":" + score1 + ":" + score0);
 
           window.requestAnimationFrame(gameLoop);
         }
