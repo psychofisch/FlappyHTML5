@@ -153,7 +153,7 @@
         function setPipeSlot(id, slot)
         {
           if(slot == undefined)
-            slot = Math.floor(Math.random()*5);
+            slot = Math.floor(Math.random()*3);
           slot++;
           if(slot < 1)
             slot = 1;
@@ -176,7 +176,7 @@
 
         function createPipe(id, slot)
         {
-          console.log("pipe '" + id + "' created");
+          //console.log("pipe '" + id + "' created");
           viewport.append("<div class='hidden pipe' id='"+id+"'><div class='sprite pipeN' id='"+id+"N'></div><div class='sprite pipeS' id='"+id+"S'></div></div>");
           setPipeSlot(id);
           $("#"+id).removeClass("hidden");
@@ -185,7 +185,7 @@
 
         function togglePause()
         {
-          console.log("PAUSE!");
+          //console.log("PAUSE!");
           gamePause = !gamePause;
 
           if(gamePause){
@@ -343,10 +343,10 @@
           if(!gamePause)
           {
             bird.velocity.y = -5;
-            console.log("Jump!");
+            //console.log("Jump!");
           }
           else {
-            console.log("Put Your Hands Up In The Air!");
+            //console.log("Put Your Hands Up In The Air!");
           }
         }
 
