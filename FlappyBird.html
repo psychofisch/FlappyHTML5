@@ -161,7 +161,7 @@
           var pipe = $("#"+id);
           var pipeN = $("#"+id+"N");
           var pipeS = $("#"+id+"S");
-          var gap = 0.15;
+          var gap = 0.2;
           var usable = floor.deadzone;
           var positionY = (usable/4)*slot;
           pipeN.css("top", positionY+(usable*gap));
@@ -276,7 +276,7 @@
           scorefield = $("#scorefield");
           Resize();
 
-          for(var i = 0; i < 1; i++)
+          for(var i = 0; i < 3; i++)
           {
             pipes[i] = {};
             pipes[i].dom = createPipe("pipe"+i);
@@ -310,7 +310,7 @@
 
         function startGame()
         {
-          init();
+          //init();
 
           $("#viewport").on("click", click);
 
@@ -326,7 +326,13 @@
         function click()
         {
           if(!gamePause)
-            bird.velocity.y = -15;
+          {
+            bird.velocity.y = -10;
+            console.log("Jump!");
+          }
+          else {
+            console.log("Put Your Hands Up In The Air!");
+          }
         }
 
         function gameLoop(timeAlive)
@@ -401,12 +407,23 @@
 
           //physics
           if(bird.velocity.y <= 100)
-            bird.velocity.y += 1*deltaTime;
+            bird.velocity.y += 4*deltaTime;
 
           //logic
           if(bird.position.y + bird.dom.height() >= floor.deadzone)
             bird.velocity.y = 0;
             //togglePause();
+
+          for(var i = 0; i < pipes.length; i++)
+          {
+            if(bird.position.x > pipes[i].position
+              && bird.position.x < pipes[i].position + pipes[i].dom.children(0).width()
+              && (bird.position.y > pipes[i].dom.children()[0].position().top
+              || bird.position.y < pipes[i].dom.children()[1].position().top + pipes[i].dom.children()[1].height())
+            )
+              console.log("bomp");
+              //(pipes[i].dom.children(0).position.top
+          }
 
           bird.position.y += bird.velocity.y;
           bird.dom.css("top", bird.position.y);
