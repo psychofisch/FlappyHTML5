@@ -31,6 +31,9 @@
               height: 24px;
               background-position: -312px -230px;
               z-index: 3;
+            }
+
+            .birdFly {
               animation: cycle_sprites 300ms steps(1) infinite/*,
                           move_bird 5s linear infinite*/;
             }
@@ -160,18 +163,6 @@
           this.isAlive = false;
         }
 
-        function Resize()
-        {
-          startBtn.css({"top": viewport.height() * 0.5 - 40, "left": viewport.width() * 0.5 - 28});
-
-          bird.position.x = viewport.width() * 0.3;
-          bird.dom.css("left", bird.position.x);
-          bird.position.y = viewport.height() * 0.5;
-          bird.dom.css("top", bird.position.y);
-
-          console.log("resize!");
-        }
-
         function setPipeSlot(id, slot)
         {
           if(slot == undefined)
@@ -231,20 +222,18 @@
             lastFrame = 0,
             deltaTime,
             distance = 0,
-            numberProto,
             scorefield,
             pipes = [],
             randomNr = [],
             pipeDistance = 52 * 5,
-            highscore,
-            gotInit = false;
+            highscore = 0,
+            gotInit = false,
+            jumpStrength = 70;
 
         //handler
         $(document).ready(function() {
           init();
         });
-
-        $(window).resize(Resize);
 
         function init(){
           viewport = $("#viewport");
@@ -252,10 +241,9 @@
           "<div class='sprite' id='start'></div>"
           +"<div class='' id='flash'></div>"
           +"<div class='' id='scorefield'></div>"
-          +"<div class='sprite' id='bird'></div>"
+          +"<div class='sprite birdFly' id='bird'></div>"
           +"<div id='city0' class='sprite city'></div>"
           +"<div id='floor0' class='sprite floor'></div>"
-          +"<div id='numberProto' class='sprite numberS hidden'></div>"
           );
 
           //floors
@@ -264,7 +252,7 @@
           floor.deadzone = viewport.height() - floor.height();
           floor.css("top", floor.deadzone);
 
-          var floorNumber = viewport.width()/floor.width();
+          var floorNumber = Math.ceil(viewport.width()/floor.width());
           for(var i = 0; i < floorNumber; i++)
           {
             //console.log("floor"+i+" created!");
@@ -284,7 +272,7 @@
           city.position = 0;
           city.css("top", city.yStart);
 
-          var cityNumber = viewport.width()/city.width();
+          var cityNumber = Math.ceil(viewport.width()/city.width());
           for(var i = 0; i < cityNumber; i++)
           {
             //console.log("city"+i+" created!");
@@ -301,9 +289,14 @@
           //inits
           bird.dom = $("#bird");
           startBtn = $("#start");
-          numberProto = $("#numberProto");
           scorefield = $("#scorefield");
-          Resize();
+
+          startBtn.css({"top": viewport.height() * 0.5 - 40, "left": viewport.width() * 0.5 - 28});
+
+          bird.position.x = viewport.width() * 0.3;
+          bird.dom.css("left", bird.position.x);
+          bird.position.y = viewport.height() * 0.5;
+          bird.dom.css("top", bird.position.y);
 
           scorefield.append("<div class='sprite numberB' id='score2'></div>");
           scorefield.append("<div class='sprite numberB' id='score1'></div>");
@@ -344,22 +337,25 @@
           $("#viewport").on("click", click);
           $("#flash").removeClass("flashStart");
 
-          bird.position.y = viewport.width() * 0.5;
+          bird.dom.addClass("birdFly");
+          bird.position.y = viewport.height() * 0.5;
 
-          for(var i = 0; i < 3; i++)
+          var pipeNumber = Math.ceil(viewport.width() / pipeDistance);
+          for(var i = 0; i < pipeNumber; i++)
           {
-            if(pipes.length < 3)
+            if(pipes.length < pipeNumber)
             {
               pipes[i] = {};
               pipes[i].dom = createPipe("pipe"+i);
             }
-            //pipes[i].position = bird.position.y + (pipeDistance*(i+1));
+
             pipes[i].position = viewport.width() + (pipeDistance*i);
           }
 
-          distance = pipes[0].position - bird.position.y - pipeDistance;
+          distance = bird.position.x - pipes[0].position;
+          //debugger;
           //hard mode
-          distance += -bird.dom.width() - pipes[0].dom.children(0).width()
+          //distance -= bird.dom.width() + pipes[0].dom.children(0).width()
 
           scorefield.children("#score0").css("background-position-x", "");
           scorefield.children("#score1").css("background-position-x", "");
@@ -376,7 +372,7 @@
         {
           if(!gamePause)
           {
-            bird.velocity.y = -70;
+            bird.velocity.y = -jumpStrength;
             //console.log("Jump!");
           }
           else {
@@ -442,6 +438,9 @@
             }
           }
 
+          var birdRotation = 30*(bird.velocity.y/100);
+          bird.dom.css("transform", "rotate(" + birdRotation + "deg)");
+
           //physics
           if(bird.velocity.y <= 100)
             bird.velocity.y += 30*deltaTime;
@@ -450,16 +449,17 @@
           distance += floorMove;
 
           var birdRight = bird.position.x + bird.dom.width();
+          var pipeWidth = pipes[0].dom.children(0).width();//all pipes are the same and at least one exists
+          var pipeHeight = pipes[0].dom.children(".pipeS").height();
           for(var i = 0; i < pipes.length; i++)
           {
             if(bird.isAlive == true
               && bird.position.x > pipes[i].position
-              && birdRight < pipes[i].position + pipes[i].dom.children(0).width()
+              && birdRight < pipes[i].position + pipeWidth
               && (bird.position.y > pipes[i].dom.children(".pipeN").position().top
-              || bird.position.y < pipes[i].dom.children(".pipeS").position().top + pipes[i].dom.children(".pipeS").height()))
+              || bird.position.y < pipes[i].dom.children(".pipeS").position().top + pipeHeight))
             {
               bird.isAlive = false;
-              togglePause();
               console.log("bomp");
             }
           }
@@ -467,19 +467,22 @@
           if(bird.isAlive == false || bird.position.y + bird.dom.height() >= floor.deadzone)
           {
             $("#flash").addClass("flashStart");
+            bird.dom.removeClass("birdFly");
             //bird.position.y -= bird.velocity.y;
             bird.isAlive = false;
             if(distance > highscore)
+            {
               highscore = distance;
+              $("#debug").html(highscore);
+            }
             togglePause();
           }
 
           bird.position.y += bird.velocity.y * deltaTime;
           bird.dom.css("top", bird.position.y);
           //bird.dom.animate({top: bird.position.x}, 32);
-
           //Score
-          var score = Math.max(0, Math.floor((distance)/pipeDistance));
+          var score = Math.max(0, Math.ceil((distance)/pipeDistance));
           var score0 = score.toString()[score.toString().length-1];
           var score1 = score.toString()[score.toString().length-2];
           var score2 = score.toString()[score.toString().length-3];
