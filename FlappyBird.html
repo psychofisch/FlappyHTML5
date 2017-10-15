@@ -220,7 +220,7 @@
             gameLoopInterval = undefined,
             startFrame = undefined,
             lastFrame = 0,
-            deltaTime,
+            deltaTime = 0,
             distance = 0,
             scorefield,
             pipes = [],
@@ -228,7 +228,9 @@
             pipeDistance = 52 * 5,
             highscore = 0,
             gotInit = false,
-            jumpStrength = 70;
+            gravity = 1100,
+            jumpStrength = 500,
+            debug;
 
         //handler
         $(document).ready(function() {
@@ -236,6 +238,8 @@
         });
 
         function init(){
+          debug = $("#debug");
+
           viewport = $("#viewport");
           viewport.html(
           "<div class='sprite' id='start'></div>"
@@ -334,11 +338,13 @@
 
         function startGame()
         {
-          $("#viewport").on("click", click);
+          viewport.off("click");
+          viewport.click("click", click);
           $("#flash").removeClass("flashStart");
 
           bird.dom.addClass("birdFly");
           bird.position.y = viewport.height() * 0.5;
+          bird.velocity.y = 0;
 
           var pipeNumber = Math.ceil(viewport.width() / pipeDistance);
           for(var i = 0; i < pipeNumber; i++)
@@ -391,16 +397,19 @@
           }
 
           timeAlive -= startFrame;
-          deltaTime = (timeAlive - lastFrame)*0.01;//ms to s conversion
+          deltaTime = (timeAlive - lastFrame)*0.001;//ms to s conversion
           lastFrame = timeAlive;
 
           if(deltaTime > 0.1)
             deltaTime = 0.1;
 
+          debug.html(deltaTime);
+
           //move background
-          var citySpeedMultiplier = 5;
+          var citySpeedMultiplier = 50;
+          var cityMove = citySpeedMultiplier*deltaTime;
           cities.each(function(i){
-            cities[i].position -= deltaTime*citySpeedMultiplier;
+            cities[i].position -= cityMove;
             $(this).css("left", cities[i].position);
           });
 
@@ -412,9 +421,10 @@
           }
 
           //move active elements
-          var activeSpeedMultiplier = 30;
+          var activeSpeedMultiplier = 300;
+          var floorMove = activeSpeedMultiplier*deltaTime;
           floors.each(function(i){
-            floors[i].position -= deltaTime*activeSpeedMultiplier;
+            floors[i].position -= floorMove;
             $(this).css("left", floors[i].position);
           });
 
@@ -425,7 +435,6 @@
             });
           }
 
-          var floorMove = activeSpeedMultiplier*deltaTime;
           for(var i = 0; i < pipes.length; i++)
           {
             pipes[i].position -= floorMove;
@@ -438,12 +447,12 @@
             }
           }
 
-          var birdRotation = 30*(bird.velocity.y/100);
+          var birdRotation = jumpStrength*(bird.velocity.y/10000);
           bird.dom.css("transform", "rotate(" + birdRotation + "deg)");
 
           //physics
-          if(bird.velocity.y <= 100)
-            bird.velocity.y += 30*deltaTime;
+          //if(bird.velocity.y <= 1000)
+            bird.velocity.y += gravity*deltaTime;
 
           //logic
           distance += floorMove;
@@ -460,7 +469,7 @@
               || bird.position.y < pipes[i].dom.children(".pipeS").position().top + pipeHeight))
             {
               bird.isAlive = false;
-              console.log("bomp");
+              //console.log("bomp");
             }
           }
 
@@ -480,6 +489,7 @@
 
           bird.position.y += bird.velocity.y * deltaTime;
           bird.dom.css("top", bird.position.y);
+
           //bird.dom.animate({top: bird.position.x}, 32);
           //Score
           var score = Math.max(0, Math.ceil((distance)/pipeDistance));
