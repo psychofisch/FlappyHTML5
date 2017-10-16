@@ -78,7 +78,7 @@ div {
   height: 14px;
   display: inline-block;
   position: relative;
-  margin-left: 3px;
+  margin: 1px;
 }
 
 .numberB {
@@ -88,17 +88,17 @@ div {
   height: 20px;
   display: inline-block;
   position: relative;
-  margin-left: 3px;
+  margin: 2px;
 }
 
 .hidden {
   display: none;
 }
 
-#scorefield {
-  margin-top: 10%;
-  transform: scale(2);
-  z-index: 2;
+#scorefield, #highscorefield {
+  top: 15%;
+  /*transform: scale(2);*/
+  z-index: 10;
   /*text-align: center;*/
 }
 
