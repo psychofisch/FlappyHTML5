@@ -1,0 +1,360 @@
+//Fischer Thomas gs16m022
+
+//classes
+function Vec2()
+{
+  this.x = 0;
+  this.y = 0;
+}
+
+function Bird()
+{
+  this.velocity = new Vec2();
+  this.position = new Vec2();
+  this.dom = undefined;
+  this.isAlive = false;
+}
+
+function setPipeSlot(id, slot)
+{
+  if(slot == undefined)
+    slot = Math.floor(Math.random()*3);
+  slot++;
+  if(slot < 1)
+    slot = 1;
+  else if(slot > 3)
+    slot = 3;
+  if(randomNr[slot] == undefined)
+    randomNr[slot] = 0;
+  randomNr[slot]++;
+  var pipe = $("#"+id);
+  var pipeN = $("#"+id+"N");
+  var pipeS = $("#"+id+"S");
+  var gap = 0.2;
+  var usable = floor.deadzone - viewport.height()*0.1;
+  var positionY = (usable/4)*slot;
+  pipeN.css("top", positionY+(usable*gap));
+  pipeS.css("top", -pipeS.height()+positionY-(usable*gap));
+  pipe.css("left", viewport.width());
+  return pipe;
+}
+
+function createPipe(id, slot)
+{
+  //console.log("pipe '" + id + "' created");
+  viewport.append("<div class='hidden pipe' id='"+id+"'><div class='sprite pipeN' id='"+id+"N'></div><div class='sprite pipeS' id='"+id+"S'></div></div>");
+  setPipeSlot(id);
+  $("#"+id).removeClass("hidden");
+  return $("#"+id);
+}
+
+function togglePause()
+{
+  //console.log("PAUSE!");
+  gamePause = !gamePause;
+
+  if(gamePause){
+    startBtn.show();
+  } else {
+      startBtn.hide();
+  }
+}
+
+//some init stuff
+var bird = new Bird(),
+    gamePause = true,
+    viewport,
+    floor,
+    floors,
+    city,
+    cities,
+    startBtn,
+    gameLoopInterval = undefined,
+    startFrame = undefined,
+    lastFrame = 0,
+    deltaTime = 0,
+    distance = 0,
+    scorefield,
+    pipes = [],
+    randomNr = [],
+    pipeDistance = 52 * 5,
+    highscore = 0,
+    gotInit = false,
+    gravity = 1100,
+    jumpStrength = 500,
+    debug = false;
+
+//handler
+$(document).ready(function() {
+  init();
+});
+
+function init(){
+  viewport = $("#viewport");
+  viewport.html(
+  "<div class='sprite' id='start'></div>"
+  +"<div class='' id='flash'></div>"
+  +"<div class='' id='scorefield'></div>"
+  +"<div class='sprite birdFly' id='bird'></div>"
+  +"<div id='city0' class='sprite city'></div>"
+  +"<div id='floor0' class='sprite floor'></div>"
+  );
+
+  //floors
+  //viewport.append("<div id='floor0' class='sprite floor'></div>");
+  floor = $("#floor0");
+  floor.deadzone = viewport.height() - floor.height();
+  floor.css("top", floor.deadzone);
+
+  var floorNumber = Math.ceil(viewport.width()/floor.width());
+  for(var i = 0; i < floorNumber; i++)
+  {
+    //console.log("floor"+i+" created!");
+    viewport.append("<div id='floor"+(i+1)+"' class='sprite floor'></div>");
+  }
+
+  floors = $(".floor");
+  floors.each(function(i){
+    floors[i].position = floor.width() * i;
+    $(this).css("left", floors[i].position);
+    $(this).css("top", floor.deadzone);
+  });
+
+  //cities
+  city = $("#city0");
+  city.yStart = floor.deadzone - city.height();
+  city.position = 0;
+  city.css("top", city.yStart);
+
+  var cityNumber = Math.ceil(viewport.width()/city.width());
+  for(var i = 0; i < cityNumber; i++)
+  {
+    //console.log("city"+i+" created!");
+    viewport.append("<div id='city"+(i+1)+"' class='sprite city'></div>");
+  }
+
+  cities = $(".city");
+  cities.each(function(i){
+    cities[i].position = city.width() * i;
+    $(this).css("left", cities[i].position);
+    $(this).css("top", city.yStart);
+  });
+
+  //inits
+  bird.dom = $("#bird");
+  startBtn = $("#start");
+  scorefield = $("#scorefield");
+
+  startBtn.css({"top": viewport.height() * 0.5 - 40, "left": viewport.width() * 0.5 - 28});
+
+  bird.position.x = viewport.width() * 0.3;
+  bird.dom.css("left", bird.position.x);
+  bird.position.y = viewport.height() * 0.5;
+  bird.dom.css("top", bird.position.y);
+
+  scorefield.append("<div class='sprite numberB' id='score2'></div>");
+  scorefield.append("<div class='sprite numberB' id='score1'></div>");
+  scorefield.append("<div class='sprite numberB' id='score0'></div>");
+  scorefield.css("left", viewport.width()*0.5-scorefield.width()/2);
+
+  startBtn.on("click", startGame);
+
+  if(gotInit == false)
+  {
+    $(document).keydown(function(event)
+    {
+      console.log(event);
+      switch(event.key)
+      {
+        case "Escape":
+        if(gamePause == false)
+          togglePause();
+        break;
+        case "r": init();
+        break;
+      }
+    });
+  }
+
+  gotInit = true;
+}
+
+//logic
+function resetGame()
+{
+  bird.position.x = 0;
+  bird.position.y = 0;
+}
+
+function startGame()
+{
+  if(debug)
+    $("#debug").show();
+  else {
+    $("#debug").hide();
+  }
+
+  viewport.off("click");
+  viewport.click("click", click);
+  $("#flash").removeClass("flashStart");
+
+  bird.dom.addClass("birdFly");
+  bird.position.y = viewport.height() * 0.5;
+  bird.velocity.y = 0;
+
+  var pipeNumber = Math.ceil(viewport.width() / pipeDistance);
+  for(var i = 0; i < pipeNumber; i++)
+  {
+    if(pipes.length < pipeNumber)
+    {
+      pipes[i] = {};
+      pipes[i].dom = createPipe("pipe"+i);
+    }
+
+    pipes[i].position = viewport.width() + (pipeDistance*i);
+  }
+
+  distance = bird.position.x - pipes[0].position;
+  //debugger;
+  //hard mode
+  //distance -= bird.dom.width() + pipes[0].dom.children(0).width()
+
+  scorefield.children("#score0").css("background-position-x", "");
+  scorefield.children("#score1").css("background-position-x", "");
+  scorefield.children("#score2").css("background-position-x", "");
+
+  bird.isAlive = true;
+
+  togglePause();
+
+  window.requestAnimationFrame(gameLoop);
+}
+
+function click()
+{
+  if(!gamePause)
+  {
+    bird.velocity.y = -jumpStrength;
+    //console.log("Jump!");
+  }
+  else {
+    //console.log("Put Your Hands Up In The Air!");
+  }
+}
+
+function gameLoop(timeAlive)
+{
+  if(gamePause)
+    return;
+
+  if(startFrame == undefined)
+  {
+    startFrame = timeAlive;
+  }
+
+  timeAlive -= startFrame;
+  deltaTime = (timeAlive - lastFrame)*0.001;//ms to s conversion
+  lastFrame = timeAlive;
+
+  if(deltaTime > 0.1)
+    deltaTime = 0.1;
+
+  $("#debug").html(deltaTime);
+
+  //move background
+  var citySpeedMultiplier = 50;
+  var cityMove = citySpeedMultiplier*deltaTime;
+  cities.each(function(i){
+    cities[i].position -= cityMove;
+    $(this).css("left", cities[i].position);
+  });
+
+  if(cities[0].position + city.width() < 0)
+  {
+    cities.each(function(i){
+      cities[i].position = city.width() * i;
+    });
+  }
+
+  //move active elements
+  var activeSpeedMultiplier = 300;
+  var floorMove = activeSpeedMultiplier*deltaTime;
+  floors.each(function(i){
+    floors[i].position -= floorMove;
+    $(this).css("left", floors[i].position);
+  });
+
+  if(floors[0].position + floor.width() < 0)
+  {
+    floors.each(function(i){
+      floors[i].position = floor.width() * i;
+    });
+  }
+
+  for(var i = 0; i < pipes.length; i++)
+  {
+    pipes[i].position -= floorMove;
+    pipes[i].dom.css("left", pipes[i].position);
+
+    if(pipes[i].position+52 < 0)
+    {
+      pipes[i].position = pipeDistance * pipes.length - 52;
+      setPipeSlot("pipe"+i);
+    }
+  }
+
+  var birdRotation = jumpStrength*(bird.velocity.y/10000);
+  bird.dom.css("transform", "rotate(" + birdRotation + "deg)");
+
+  //physics
+  //if(bird.velocity.y <= 1000)
+    bird.velocity.y += gravity*deltaTime;
+
+  //logic
+  distance += floorMove;
+
+  var birdRight = bird.position.x + bird.dom.width();
+  var pipeWidth = pipes[0].dom.children(0).width();//all pipes are the same and at least one exists
+  var pipeHeight = pipes[0].dom.children(".pipeS").height();
+  for(var i = 0; i < pipes.length; i++)
+  {
+    if(bird.isAlive == true
+      && bird.position.x > pipes[i].position
+      && birdRight < pipes[i].position + pipeWidth
+      && (bird.position.y > pipes[i].dom.children(".pipeN").position().top
+      || bird.position.y < pipes[i].dom.children(".pipeS").position().top + pipeHeight))
+    {
+      bird.isAlive = false;
+      //console.log("bomp");
+    }
+  }
+
+  if(bird.isAlive == false || bird.position.y + bird.dom.height() >= floor.deadzone)
+  {
+    $("#flash").addClass("flashStart");
+    bird.dom.removeClass("birdFly");
+    //bird.position.y -= bird.velocity.y;
+    bird.isAlive = false;
+    if(distance > highscore)
+    {
+      highscore = distance;
+      $("#debug").html(highscore);
+    }
+    togglePause();
+  }
+
+  bird.position.y += bird.velocity.y * deltaTime;
+  bird.dom.css("top", bird.position.y);
+
+  //bird.dom.animate({top: bird.position.x}, 32);
+  //Score
+  var score = Math.max(0, Math.ceil((distance)/pipeDistance));
+  var score0 = score.toString()[score.toString().length-1];
+  var score1 = score.toString()[score.toString().length-2];
+  var score2 = score.toString()[score.toString().length-3];
+  scorefield.children("#score0").css("background-position-x", (score0)*-16);
+  scorefield.children("#score1").css("background-position-x", (score1)*-16);
+  scorefield.children("#score2").css("background-position-x", (score2)*-16);
+
+  window.requestAnimationFrame(gameLoop);
+}

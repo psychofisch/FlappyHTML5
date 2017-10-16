@@ -1,0 +1,139 @@
+body {
+  margin:0; padding: 0; border:0; background: black;
+    overflow: hidden;
+}
+
+div {
+  position: absolute; margin: 0; padding: 0; border: 0;
+    outline:0; color:white;
+}
+
+.sprite{
+  background-image:url(sheet.png);
+}
+
+#viewport {
+  width: 100%; height: 100%; overflow: hidden;
+  top: 0px; left: 0px; margin: 0;
+  background-color: #70C5CF;
+  z-index: 0;
+}
+
+#bird {
+  width: 34px;
+  height: 24px;
+  background-position: -312px -230px;
+  z-index: 3;
+}
+
+.birdFly {
+  animation: cycle_sprites 300ms steps(1) infinite/*,
+              move_bird 5s linear infinite*/;
+}
+
+#start {
+  background-position: -318px -382px;
+  width: 80px;
+  height: 28px;
+  z-index: 10;
+}
+
+.city {
+  background-position: -0px -410px;
+  width: 276px;
+  height: 200px;
+}
+
+#getready {
+  background-position: -118px -310px;
+  width: 288px;
+  height: 38px;
+}
+
+.floor {
+  background-position: -276px 0;
+  width: 224px;
+  height: 112px;
+  z-index: 2;
+}
+
+.pipeN {
+  /*251, 0, 26, 200*/
+  background-position: -502px 0;
+  width: 52px;
+  height: 400px;
+}
+
+.pipeS {
+  /*277, 0, 26, 200*/
+  background-position: -554px 0;
+  width: 52px;
+  height: 400px;
+}
+
+.numberS {
+  /* 0, 177, 6,  7 */
+  background-position: 0 -354px;
+  width: 12px;
+  height: 14px;
+  display: inline-block;
+  position: relative;
+  margin-left: 3px;
+}
+
+.numberB {
+  /* 0, 177, 6,  7 */
+  background-position: 0 -376px;
+  width: 14px;
+  height: 20px;
+  display: inline-block;
+  position: relative;
+  margin-left: 3px;
+}
+
+.hidden {
+  display: none;
+}
+
+#scorefield {
+  margin-top: 10%;
+  transform: scale(2);
+  z-index: 2;
+  /*text-align: center;*/
+}
+
+#flash {
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  background-color: white;
+  opacity: 0;
+}
+
+.flashStart {
+  animation-name: flashAnimation;
+  animation-timing-function: ease;
+  animation-duration: 1s;
+  animation-iteration-count: 1;
+}
+
+#debug {
+  z-index: 100;
+}
+
+@keyframes cycle_sprites {
+    0% { background-position: -312px -230px; }
+    33.33% { background-position: -312px -256px;}
+    66.66% { background-position: -312px -282px;}
+}
+
+@keyframes flashAnimation {
+  0% { opacity: 0; }
+  5% { opacity: 100; }
+  100% { opacity: 0; }
+}
+
+@keyframes move_bird {
+    from { left: 0px}
+    to { left: 500px}
+}
