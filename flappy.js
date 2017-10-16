@@ -17,24 +17,20 @@ function Bird()
 
 function setPipeSlot(id, slot)
 {
-  if(slot == undefined)
-    slot = Math.floor(Math.random()*3);
-  slot++;
-  // if(slot < 1)
-  //   slot = 1;
-  // else if(slot > 3)
-  //   slot = 3;
+  if(debug)
+    console.log("pipe '" + id + "' positioned");
 
-  if(randomNr[slot] == undefined)
-    randomNr[slot] = 0;
-  randomNr[slot]++;
+  var slots = 3;
+  if(slot == undefined)
+    slot = Math.floor(Math.random()*slots);
+  slot++;
 
   var pipe = $("#"+id);
   var pipeN = pipe.children(".pipeN");
   var pipeS = pipe.children(".pipeS");
   var gap = 0.2;
   var usable = floor.deadzone - viewport.height()*0.1;
-  var positionY = (usable/4)*slot;
+  var positionY = (usable/(slots + 1))*slot;
   pipeN.css("top", positionY+(usable*gap));
   pipeS.css("top", -pipeS.height()+positionY-(usable*gap));
   pipe.css("left", viewport.width());
@@ -43,7 +39,8 @@ function setPipeSlot(id, slot)
 
 function createPipe(id, slot)
 {
-  //console.log("pipe '" + id + "' created");
+  if(debug)
+    console.log("pipe '" + id + "' created");
   viewport.append("<div class='hidden pipe' id='"+id+"'><div class='sprite pipeN' id='"+id+"N'></div><div class='sprite pipeS' id='"+id+"S'></div></div>");
   setPipeSlot(id);
   $("#"+id).removeClass("hidden");
@@ -52,7 +49,8 @@ function createPipe(id, slot)
 
 function togglePause()
 {
-  //console.log("PAUSE!");
+  if(debug)
+    console.log("PAUSE!");
   gamePause = !gamePause;
 
   if(gamePause){
@@ -78,7 +76,6 @@ var bird = new Bird(),
     distance = 0,
     scorefield,
     pipes = [],
-    randomNr = [],
     pipeDistance = 52 * 5,
     highscore = 0,
     highscoreField,
@@ -105,7 +102,6 @@ function init(){
   );
 
   //floors
-  //viewport.append("<div id='floor0' class='sprite floor'></div>");
   floor = $("#floor0");
   floor.deadzone = viewport.height() - floor.height();
   floor.css("top", floor.deadzone);
@@ -113,7 +109,8 @@ function init(){
   var floorNumber = Math.ceil(viewport.width()/floor.width());
   for(var i = 0; i < floorNumber; i++)
   {
-    //console.log("floor"+i+" created!");
+    if(debug)
+      console.log("floor"+i+" created!");
     viewport.append("<div id='floor"+(i+1)+"' class='sprite floor'></div>");
   }
 
@@ -127,13 +124,13 @@ function init(){
   //cities
   city = $("#city0");
   city.yStart = floor.deadzone - city.height();
-  city.position = 0;
   city.css("top", city.yStart);
 
   var cityNumber = Math.ceil(viewport.width()/city.width());
   for(var i = 0; i < cityNumber; i++)
   {
-    //console.log("city"+i+" created!");
+    if(debug)
+      console.log("city"+i+" created!");
     viewport.append("<div id='city"+(i+1)+"' class='sprite city'></div>");
   }
 
@@ -177,14 +174,13 @@ function init(){
   {
     $(document).keydown(function(event)
     {
-      console.log(event);
+      if(debug)
+        console.log(event);
       switch(event.key)
       {
         case "Escape":
         if(gamePause == false)
           togglePause();
-        break;
-        case "r": init();
         break;
       }
     });
@@ -230,6 +226,14 @@ function startGame()
   scorefield.children("#score1").css("background-position-x", "");
   scorefield.children("#score2").css("background-position-x", "");
 
+  var score = Math.max(0, Math.ceil((highscore)/pipeDistance));
+  var strLen = score.toString().length;
+  for(var i = 0; i < strLen; i++)//only works as long as highscore/score is below 1000
+  {
+    var scoreCurrent = score.toString()[strLen-(i+1)];
+    highscorefield.children("#hscore"+i).css("background-position-x", (scoreCurrent)*-14);
+  }
+
   bird.isAlive = true;
 
   togglePause();
@@ -242,10 +246,12 @@ function click()
   if(!gamePause)
   {
     bird.velocity = -jumpStrength;
-    //console.log("Jump!");
+    if(debug)
+      console.log("Jump!");
   }
   else {
-    //console.log("Put Your Hands Up In The Air!");
+    if(debug)
+      console.log("Put Your Hands Up In The Air!");
   }
 }
 
@@ -267,8 +273,7 @@ function gameLoop(timeAlive)
     deltaTime = 0.1;
 
   //move background
-  var citySpeedMultiplier = 50;
-  var cityMove = citySpeedMultiplier*deltaTime;
+  var cityMove = 50*deltaTime;
   cities.each(function(i){
     cities[i].position -= cityMove;
     $(this).css("left", cities[i].position);
@@ -282,8 +287,7 @@ function gameLoop(timeAlive)
   }
 
   //move active elements
-  var activeSpeedMultiplier = 300;
-  var floorMove = activeSpeedMultiplier*deltaTime;
+  var floorMove = 300*deltaTime;
   floors.each(function(i){
     floors[i].position -= floorMove;
     $(this).css("left", floors[i].position);
@@ -312,7 +316,7 @@ function gameLoop(timeAlive)
   bird.dom.css("transform", "rotate(" + birdRotation + "deg)");
 
   //physics
-  //if(bird.velocity.y <= 1000)
+  //if(bird.velocity.y <= 1000) //nevermind...
     bird.velocity += gravity*deltaTime;
 
   //logic
@@ -330,7 +334,8 @@ function gameLoop(timeAlive)
       || bird.position.y < pipes[i].dom.children(".pipeS").position().top + pipeHeight))
     {
       bird.isAlive = false;
-      //console.log("bomp");
+      if(debug)
+        console.log("bomp");
     }
   }
 
@@ -338,18 +343,11 @@ function gameLoop(timeAlive)
   {
     $("#flash").addClass("flashStart");
     bird.dom.removeClass("birdFly");
-    //bird.position.y -= bird.velocity;
+    //bird.position.y -= bird.velocity; //does look weird sometimes
     bird.isAlive = false;
     if(distance > highscore)
     {
       highscore = distance;
-      var score = Math.max(0, Math.ceil((highscore)/pipeDistance));
-      var strLen = score.toString().length;
-      for(var i = 0; i < strLen; i++)
-      {
-        var scoreCurrent = score.toString()[i];
-        highscorefield.children("#hscore"+i).css("background-position-x", (scoreCurrent)*-14);
-      }
       $("#debug").html(highscore);
     }
     togglePause();
@@ -358,14 +356,13 @@ function gameLoop(timeAlive)
   bird.position.y += bird.velocity * deltaTime;
   bird.dom.css("top", bird.position.y);
 
-  //bird.dom.animate({top: bird.position.x}, 32);
   //Score
   var score = Math.max(0, Math.ceil((distance)/pipeDistance));
   $("#debug").html(score);
   var strLen = score.toString().length;
   for(var i = 0; i < strLen; i++)
   {
-    var scoreCurrent = score.toString()[i];
+    var scoreCurrent = score.toString()[strLen-(i+1)];
     scorefield.children("#score"+i).css("background-position-x", (scoreCurrent)*-16);
   }
 
