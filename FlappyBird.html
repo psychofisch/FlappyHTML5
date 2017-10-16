@@ -230,7 +230,7 @@
             gotInit = false,
             gravity = 1100,
             jumpStrength = 500,
-            debug;
+            debug = false;
 
         //handler
         $(document).ready(function() {
@@ -238,8 +238,6 @@
         });
 
         function init(){
-          debug = $("#debug");
-
           viewport = $("#viewport");
           viewport.html(
           "<div class='sprite' id='start'></div>"
@@ -338,6 +336,12 @@
 
         function startGame()
         {
+          if(debug)
+            $("#debug").show();
+          else {
+            $("#debug").hide();
+          }
+
           viewport.off("click");
           viewport.click("click", click);
           $("#flash").removeClass("flashStart");
@@ -403,7 +407,7 @@
           if(deltaTime > 0.1)
             deltaTime = 0.1;
 
-          debug.html(deltaTime);
+          $("#debug").html(deltaTime);
 
           //move background
           var citySpeedMultiplier = 50;
