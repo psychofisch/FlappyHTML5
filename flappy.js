@@ -17,23 +17,24 @@ function Bird()
 
 function setPipeSlot(id, slot)
 {
-  if(debug)
-    console.log("pipe '" + id + "' positioned");
-
-  var slots = 3;
+  var slots = 10;
   if(slot == undefined)
     slot = Math.floor(Math.random()*slots);
   slot++;
 
+  var margin = 60;
   var pipe = $("#"+id);
   var pipeN = pipe.children(".pipeN");
   var pipeS = pipe.children(".pipeS");
-  var gap = 0.2;
-  var usable = floor.deadzone - viewport.height()*0.1;
-  var positionY = (usable/(slots + 1))*slot;
-  pipeN.css("top", positionY+(usable*gap));
-  pipeS.css("top", -pipeS.height()+positionY-(usable*gap));
-  pipe.css("left", viewport.width());
+  var gap = 120;//gap is 100px but 50 above and below
+  var usable = floor.safezone - gap - margin;
+  var positionY = (usable/slots)*slot+(margin*0.5);
+  pipeN.css("top", positionY+gap);
+  pipeS.css("top", -pipeS.height()+positionY);
+
+  if(debug)
+    console.log("pipe '" + id + "' positioned, slot " + slot + " used");
+
   return pipe;
 }
 
@@ -82,7 +83,8 @@ var bird = new Bird(),
     gotInit = false,
     gravity = 1300,
     jumpStrength = 500,
-    debug = false;
+    debug = false,
+    god = false;
 
 //handler
 $(document).ready(function() {
@@ -103,8 +105,8 @@ function init(){
 
   //floors
   floor = $("#floor0");
-  floor.deadzone = viewport.height() - floor.height();
-  floor.css("top", floor.deadzone);
+  floor.safezone = viewport.height() - floor.height();
+  floor.css("top", floor.safezone);
 
   var floorNumber = Math.ceil(viewport.width()/floor.width());
   for(var i = 0; i < floorNumber; i++)
@@ -118,12 +120,12 @@ function init(){
   floors.each(function(i){
     floors[i].position = floor.width() * i;
     $(this).css("left", floors[i].position);
-    $(this).css("top", floor.deadzone);
+    $(this).css("top", floor.safezone);
   });
 
   //cities
   city = $("#city0");
-  city.yStart = floor.deadzone - city.height();
+  city.yStart = floor.safezone - city.height();
   city.css("top", city.yStart);
 
   var cityNumber = Math.ceil(viewport.width()/city.width());
@@ -215,6 +217,7 @@ function startGame()
       pipes[i].dom = createPipe("pipe"+i);
     }
 
+    setPipeSlot("pipe"+i);
     pipes[i].position = viewport.width() + (pipeDistance*i);
   }
 
@@ -269,7 +272,7 @@ function gameLoop(timeAlive)
   deltaTime = (timeAlive - lastFrame)*0.001;//ms to s conversion
   lastFrame = timeAlive;
 
-  if(deltaTime > 0.1)
+  if(deltaTime > 0.1) //safety precaution
     deltaTime = 0.1;
 
   //move background
@@ -331,7 +334,8 @@ function gameLoop(timeAlive)
       && bird.position.x > pipes[i].position
       && birdRight < pipes[i].position + pipeWidth
       && (bird.position.y > pipes[i].dom.children(".pipeN").position().top
-      || bird.position.y < pipes[i].dom.children(".pipeS").position().top + pipeHeight))
+      || bird.position.y < pipes[i].dom.children(".pipeS").position().top + pipeHeight)
+      && !god)
     {
       bird.isAlive = false;
       if(debug)
@@ -339,7 +343,7 @@ function gameLoop(timeAlive)
     }
   }
 
-  if(bird.isAlive == false || bird.position.y + bird.dom.height() >= floor.deadzone)
+  if(bird.isAlive == false || bird.position.y + bird.dom.height() >= floor.safezone)
   {
     $("#flash").addClass("flashStart");
     bird.dom.removeClass("birdFly");
