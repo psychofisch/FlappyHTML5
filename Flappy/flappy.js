@@ -347,6 +347,7 @@ function gameLoop(timeAlive)
   {
     $("#flash").addClass("flashStart");
     bird.dom.removeClass("birdFly");
+    bird.dom.animate({top: floor.safezone - bird.dom.height()}, 700, "linear");
     //bird.position.y -= bird.velocity; //does look weird sometimes
     bird.isAlive = false;
     if(distance > highscore)
