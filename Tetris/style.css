@@ -1,0 +1,33 @@
+* {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
+}
+
+body {
+  margin:0; padding: 0; border:0; background: darkgrey;
+    overflow: hidden;
+}
+
+div {
+  position: absolute; margin: 0; padding: 0; border: 0;
+    outline:0; color:white;
+}
+
+#viewport {
+  overflow: hidden;
+  top: 0px; left: 0px; margin: 0;
+  z-index: 0;
+}
+
+.hidden {
+  display: none;
+}
+
+#debug {
+  z-index: 100;
+}
