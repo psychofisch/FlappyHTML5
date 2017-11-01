@@ -14,13 +14,14 @@ var gamePause = true,
     gameLoopInterval = undefined,
     startFrame = undefined,
     lastFrame = 0,
-    deltaTime = 0,
+    //deltaTime = 0,
     scorefield,
     highscore = 0,
     highscoreField,
     gotInit = false,
     debug = true,
-    block;
+    blockSize,
+    blocks = [];
 
 function startGame()
 {
@@ -35,7 +36,8 @@ function startGame()
 
   togglePause();
 
-  window.requestAnimationFrame(gameLoop);
+  //gameLoopInterval = setInterval(gameLoopFixed, 1000);
+  //window.requestAnimationFrame(gameLoop);
 }
 
 function click()
@@ -57,11 +59,16 @@ $(document).ready(function() {
 });
 
 function init(){
+  //Original Tetris: 10 blocks wide, 18 blocks high
   canvas = document.getElementById('viewport');
+  canvas.height = window.innerHeight;
+  canvas.width = 10 * canvas.height / 18;
   context = canvas.getContext('2d');
 
-  block = new Path2D();
-  block.rect(10, 10, 50, 50);
+  blockSize = canvas.width / 10;
+  blocks[0] = {};
+  blocks[0].x = 0;
+  blocks[0].y = 0;
 
   if(gotInit == false)
   {
@@ -83,14 +90,13 @@ function init(){
 
   highscore = 0;
   togglePause();
-  window.requestAnimationFrame(gameLoop);
+
+  gameLoopInterval = setInterval(function(){gameLoop(500);}, 500);
+  //window.requestAnimationFrame(requestFrameHandler);
 }
 
-function gameLoop(timeAlive)
+function requestFrameHandler(timeAlive)
 {
-  if(gamePause)
-    return;
-
   if(startFrame == undefined)
   {
     startFrame = timeAlive;
@@ -103,21 +109,37 @@ function gameLoop(timeAlive)
   if(deltaTime > 0.1) //safety precaution
     deltaTime = 0.1;
 
-  highscore += 100 * deltaTime;
-  if(highscore > 480)
-    highscore = -50;
+  gameLoop(deltaTime);
+
+  console.log(deltaTime);
+
+  window.requestAnimationFrame(requestFrameHandler);
+}
+
+function gameLoop(deltaTime)
+{
+  if(gamePause)
+    return;
 
   context.save();
 
-  context.clearRect(0, 0, 480, 720);
-  context.translate(highscore, 0);
+  context.fillStyle = 'lightgrey';
+  context.fillRect(0, 0, 480, 720);
 
-  context.fillStyle = 'rgb(200, 0, 0)';
-  context.fill(block);
-
+  for(var i = 0; i < blocks.length; i++)
+  {
+    context.save();
+    context.fillStyle = 'rgb(200, 0, 0)';
+    context.fillRect(blocks[i].x * blockSize, blocks[i].y * blockSize, blockSize, blockSize);
+    context.restore();
+  }
   context.restore();
 
-  //$("#debug").html(deltaTime);
+  for(var i = 0; i < blocks.length; i++)
+  {
+    if(blocks[i].y + 1 < 18)
+      blocks[i].y++;
+  }
 
-  window.requestAnimationFrame(gameLoop);
+  //$("#debug").html(deltaTime);
 }
