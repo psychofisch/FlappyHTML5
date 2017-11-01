@@ -10,7 +10,7 @@ function togglePause()
 function createTetrisBlock(type)
 {
   var tmp = {};
-  tmp.x = 0;
+  tmp.x = 4;
   tmp.y = 0;
   tmp.angle = 0;
   tmp.style = type;
@@ -86,65 +86,44 @@ function init(){
   blockStyles[0] = new Path2D();
   for(var i = 0; i < 4; i++)
   {
-    blockStyles[0].rect(0, -i * blockSize, blockSize, blockSize);
+    blockStyles[0].rect(0, -(i-1) * blockSize, blockSize, blockSize);
   }
-  blockStyles[0].origin = {};
-  blockStyles[0].origin.x = blockSize * 0.5;
-  blockStyles[0].origin.y = -blockSize * 0.5;
   //L
   blockStyles[1] = new Path2D();
   blockStyles[1].rect(0,         blockSize,  blockSize, blockSize);
   blockStyles[1].rect(0,         0,          blockSize, blockSize);
   blockStyles[1].rect(0,         -blockSize, blockSize, blockSize);
   blockStyles[1].rect(blockSize, blockSize,  blockSize, blockSize);
-  blockStyles[1].origin = {};
-  blockStyles[1].origin.x = blockSize * 0.5;
-  blockStyles[1].origin.y = blockSize * 0.5;
   //L2
   blockStyles[2] = new Path2D();
   blockStyles[2].rect(0,         blockSize,  blockSize, blockSize);
   blockStyles[2].rect(0,         0,          blockSize, blockSize);
   blockStyles[2].rect(0,         -blockSize, blockSize, blockSize);
   blockStyles[2].rect(-blockSize, blockSize, blockSize, blockSize);
-  blockStyles[2].origin = {};
-  blockStyles[2].origin.x = blockSize * 0.5;
-  blockStyles[2].origin.y = blockSize * 0.5;
   //var1
   blockStyles[3] = new Path2D();
   blockStyles[3].rect(0,         blockSize,  blockSize, blockSize);
   blockStyles[3].rect(0,         0,          blockSize, blockSize);
   blockStyles[3].rect(-blockSize,0,          blockSize, blockSize);
   blockStyles[3].rect(blockSize, blockSize,  blockSize, blockSize);
-  blockStyles[3].origin = {};
-  blockStyles[3].origin.x = blockSize * 0.5;
-  blockStyles[3].origin.y = blockSize * 0.5;
   //var2
   blockStyles[4] = new Path2D();
   blockStyles[4].rect(0,         blockSize,  blockSize, blockSize);
   blockStyles[4].rect(0,         0,          blockSize, blockSize);
   blockStyles[4].rect(-blockSize,blockSize,  blockSize, blockSize);
   blockStyles[4].rect(blockSize, 0,          blockSize, blockSize);
-  blockStyles[4].origin = {};
-  blockStyles[4].origin.x = blockSize * 0.5;
-  blockStyles[4].origin.y = blockSize * 0.5;
   //cube
   blockStyles[5] = new Path2D();
   blockStyles[5].rect(0,         blockSize,  blockSize, blockSize);
   blockStyles[5].rect(0,         0,          blockSize, blockSize);
   blockStyles[5].rect(blockSize, 0,          blockSize, blockSize);
   blockStyles[5].rect(blockSize, blockSize,  blockSize, blockSize);
-  blockStyles[5].origin = {};
-  blockStyles[5].origin.x = blockSize * 0.5;
-  blockStyles[5].origin.y = blockSize * 0.5;
   //var3
   blockStyles[6] = new Path2D();
   blockStyles[6].rect(0,         -blockSize,  blockSize, blockSize);
   blockStyles[6].rect(0,         0,          blockSize, blockSize);
   blockStyles[6].rect(-blockSize,0,          blockSize, blockSize);
   blockStyles[6].rect(blockSize, 0,  blockSize, blockSize);
-  blockStyles[6].origin = {};
-  blockStyles[6].origin.x = blockSize * 0.5;
-  blockStyles[6].origin.y = blockSize * 0.5;
 
   blocks[0] = createTetrisBlock(6);
   activeBlock = blocks[0];
@@ -245,9 +224,9 @@ function gameLoop(deltaTime)
   {
     context.save();
     context.fillStyle = '#6b7353';
-    context.translate(blocks[i].x * blockSize + (blockSize * 0.5), blocks[i].y * blockSize);
+    context.translate(blocks[i].x * blockSize + (blockSize * 0.5), blocks[i].y * blockSize + (blockSize * 0.5));
     context.rotate(blocks[i].angle * 0.01745329251); //Math.PI / 180
-    context.translate(-blocks[i].mesh.origin.x, -blocks[i].mesh.origin.y);
+    context.translate(-blockSize * 0.5, -blockSize * 0.5);
     context.fill(blocks[i].mesh);
     context.restore();
   }
