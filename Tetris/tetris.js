@@ -21,8 +21,8 @@ function createTetrisBlock(type)
 
 //some init stuff
 var gamePause = true,
-    canvas,
     context,
+    collisionContext,
     gameLoopInterval = undefined,
     startFrame = undefined,
     lastFrame = 0,
@@ -101,7 +101,7 @@ function rotateActiveBlock()
 function countBlocks()
 {
   var count = 0,
-      data = context.getImageData(0, 0, canvas.width, canvas.height);
+      data = context.getImageData(0, 0, context.canvas.width, context.canvas.height);
 
   for(var x = 0; x < 10; x++)
   {
@@ -122,10 +122,16 @@ $(document).ready(function() {
 
 function init(){
   //Original Tetris: 10 blocks wide, 18 blocks high
-  canvas = document.getElementById('viewport');
+  var canvas = document.getElementById('viewport');
   canvas.height = window.innerHeight;
   canvas.width = 10 * canvas.height / 20;
   context = canvas.getContext('2d');
+
+  //https://stackoverflow.com/questions/43369748/how-to-render-offscreen-canvas-properly
+  var collisionCanvas = document.createElement('canvas');
+  collisionCanvas.height = 20;
+  collisionCanvas.width = 10;
+  collisionCtx = collisionCanvas.getContext('2d');
 
   blockSize = canvas.width / 10;
 
