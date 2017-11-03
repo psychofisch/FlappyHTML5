@@ -35,7 +35,10 @@ var gamePause = true,
     blockSize,
     blockStyles,
     blocks = [],
-    activeBlock;
+    activeBlock,
+    blockCount = 0,
+    colorBg = 'rgba(196, 207, 161, 1)',
+    colorBlock = 'rgba(107, 115, 83, 1)';
 
 function startGame()
 {
@@ -67,6 +70,51 @@ function click()
   }
 }
 
+function moveActiveBlock(mode)
+{
+  switch(mode)
+  {
+    case "left":
+      if(activeBlock.x > 0)
+        activeBlock.x--;
+    break;
+
+    case "right":
+      if(activeBlock.x + 1 < 10)
+        activeBlock.x++;
+    break;
+
+    case "down":
+      console.log("moving active block down is not implemented yet!");
+    break;
+  }
+}
+
+function rotateActiveBlock()
+{
+  if(activeBlock.style != 5)
+    activeBlock.angle += 90;
+  if(activeBlock.angle >= 360)
+    activeBlock.angle = 0;
+}
+
+function countBlocks()
+{
+  var count = 0,
+      data = context.getImageData(0, 0, canvas.width, canvas.height);
+
+  for(var x = 0; x < 10; x++)
+  {
+    for(var y = 0; y < 20; y++)
+    {
+      var pixel = data.data[((y * (imageData.width * 4)) + (x * 4))];
+      debugger;
+    }
+  }
+
+  return count;
+}
+
 //handler
 $(document).ready(function() {
   init();
@@ -76,7 +124,7 @@ function init(){
   //Original Tetris: 10 blocks wide, 18 blocks high
   canvas = document.getElementById('viewport');
   canvas.height = window.innerHeight;
-  canvas.width = 10 * canvas.height / 18;
+  canvas.width = 10 * canvas.height / 20;
   context = canvas.getContext('2d');
 
   blockSize = canvas.width / 10;
@@ -132,28 +180,28 @@ function init(){
   {
     $(document).keydown(function(event)
     {
-      if(debug)
+      if(debug && false)
         console.log(event);
       switch(event.key)
       {
         case "A"://fallthrough
         case "a":
-          if(activeBlock.x > 0)
-            activeBlock.x--;
+          moveActiveBlock("left");
         break;
 
         case "D"://fallthrough
         case "d":
-          if(activeBlock.x + 1 < 10)
-            activeBlock.x++;
+          moveActiveBlock("right");
         break;
 
         case "W"://fallthrough
         case "w":
-          if(activeBlock.style != 5)
-            activeBlock.angle += 90;
-          if(activeBlock.angle >= 360)
-            activeBlock.angle = 0;
+          rotateActiveBlock();
+        break;
+
+        case "S"://fallthrough
+        case "s":
+          moveActiveBlock("down");
         break;
 
         case "Escape":
@@ -208,7 +256,7 @@ function gameLoop(deltaTime)
   {
     for(var i = 0; i < blocks.length; i++)
     {
-      if(blocks[i].y + 1 < 18)
+      if(blocks[i].y + 1 < 20)
         blocks[i].y++;
     }
 
@@ -217,13 +265,13 @@ function gameLoop(deltaTime)
 
   context.save();
 
-  context.fillStyle = '#c4cfa1';
+  context.fillStyle = colorBg;
   context.fillRect(0, 0, 480, 720);
 
   for(var i = 0; i < blocks.length; i++)
   {
     context.save();
-    context.fillStyle = '#6b7353';
+    context.fillStyle = colorBlock;
     context.translate(blocks[i].x * blockSize + (blockSize * 0.5), blocks[i].y * blockSize + (blockSize * 0.5));
     context.rotate(blocks[i].angle * 0.01745329251); //Math.PI / 180
     context.translate(-blockSize * 0.5, -blockSize * 0.5);
