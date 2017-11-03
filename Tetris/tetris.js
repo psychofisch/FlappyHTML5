@@ -39,7 +39,7 @@ var gamePause = true,
     activeBlock,
     blockCount = 0,
     colorBg = 'rgb(196, 207, 161)',
-    colorBlock = 'rgb(107, 115, 83)';
+    colorBlock;
 
 function startGame()
 {
@@ -228,6 +228,14 @@ function init(){
   blockStyles[6].rect(-1,0,1, 1);
   blockStyles[6].rect(1, 0,  1, 1);
 
+  colorBlock = 'rgb(107, 115, 83)';
+  // colorBlock[0] = 'rgb(100, 106, 77)';
+  // colorBlock[0] = 'rgb(107, 115, 83)';
+  // colorBlock[0] = 'rgb(107, 115, 83)';
+  // colorBlock[0] = 'rgb(107, 115, 83)';
+  // colorBlock[0] = 'rgb(107, 115, 83)';
+  // colorBlock[0] = 'rgb(107, 115, 83)';
+
   blocks[0] = createTetrisBlock(0);
   activeBlock = blocks[0];
 
@@ -307,19 +315,15 @@ function gameLoop(deltaTime)
 
   this.counter += deltaTime;
 
-  if(this.counter >= 0.5)
+  if(this.counter >= 0.2)
   {
-    for(var i = 0; i < blocks.length; i++)
+    activeBlock.y++;
+    if(drawCtx(collisionCtx))
     {
-      if(blocks[i].y + 1 < 20)
-      {
-        blocks[i].y++;
-        if(drawCtx(collisionCtx))
-        {
-          blocks[i].y--;
-          drawCtx(collisionCtx);
-        }
-      }
+      activeBlock.y--;
+      drawCtx(collisionCtx);
+      blocks[blocks.length] = createTetrisBlock(Math.floor(Math.random()*7));
+      activeBlock = blocks[blocks.length - 1];
     }
 
     this.counter = 0;
