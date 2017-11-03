@@ -11,10 +11,11 @@ function createTetrisBlock(type)
 {
   var tmp = {};
   tmp.x = 4;
-  tmp.y = 0;
+  tmp.y = 4;
   tmp.angle = 0;
   tmp.style = type;
   tmp.mesh = blockStyles[type];
+  blockCount += 4;
 
   return tmp;
 }
@@ -88,6 +89,8 @@ function moveActiveBlock(mode)
       console.log("moving active block down is not implemented yet!");
     break;
   }
+
+  drawCtx(collisionCtx);
 }
 
 function rotateActiveBlock()
@@ -96,9 +99,11 @@ function rotateActiveBlock()
     activeBlock.angle += 90;
   if(activeBlock.angle >= 360)
     activeBlock.angle = 0;
+
+  drawCtx(collisionCtx);
 }
 
-function countBlocks()
+function doesCollide()
 {
   var count = 0,
       data = collisionCtx.getImageData(0, 0, 10, 20);
@@ -108,10 +113,34 @@ function countBlocks()
     for(var y = 0; y < 20; y++)
     {
       var pixel = data.data[((y * (10 * 4)) + (x * 4))];
+      if(pixel == colorBlock.substr(4,3))//compare red value
+        count++;
     }
   }
 
-  return count;
+  return (count != blockCount);
+}
+
+function drawCtx(ctx)
+{
+  ctx.save();
+  ctx.fillStyle = colorBg;
+  ctx.fillRect(0, 0, 10, 20);
+
+  for(var i = 0; i < blocks.length; i++)
+  {
+    ctx.save();
+    ctx.fillStyle = colorBlock;
+    ctx.translate(blocks[i].x * 1 + 0.5, blocks[i].y + 0.5);
+    ctx.rotate(blocks[i].angle * 0.01745329251); //Math.PI / 180
+    ctx.translate(-0.5, -0.5);
+    ctx.fill(blocks[i].mesh);
+    ctx.restore();
+  }
+  ctx.restore();
+
+  //console.log("collision:" + doesCollide());
+  return doesCollide();
 }
 
 //handler
@@ -179,7 +208,7 @@ function init(){
   blockStyles[6].rect(-1,0,1, 1);
   blockStyles[6].rect(1, 0,  1, 1);
 
-  blocks[0] = createTetrisBlock(6);
+  blocks[0] = createTetrisBlock(0);
   activeBlock = blocks[0];
 
   if(gotInit == false)
@@ -263,27 +292,20 @@ function gameLoop(deltaTime)
     for(var i = 0; i < blocks.length; i++)
     {
       if(blocks[i].y + 1 < 20)
+      {
         blocks[i].y++;
+        if(drawCtx(collisionCtx))
+        {
+          blocks[i].y--;
+          drawCtx(collisionCtx);
+        }
+      }
     }
 
     this.counter = 0;
   }
 
-  collisionCtx.save();
-  collisionCtx.fillStyle = colorBg;
-  collisionCtx.fillRect(0, 0, 10, 20);
-
-  for(var i = 0; i < blocks.length; i++)
-  {
-    collisionCtx.save();
-    collisionCtx.fillStyle = colorBlock;
-    collisionCtx.translate(blocks[i].x * 1 + 0.5, blocks[i].y + 0.5);
-    collisionCtx.rotate(blocks[i].angle * 0.01745329251); //Math.PI / 180
-    collisionCtx.translate(-0.5, -0.5);
-    collisionCtx.fill(blocks[i].mesh);
-    collisionCtx.restore();
-  }
-  collisionCtx.restore();
+  //console.log(doesCollide());
 
   context.save();
   context.scale(blockSize, blockSize);
