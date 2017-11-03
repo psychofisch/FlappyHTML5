@@ -37,8 +37,8 @@ var gamePause = true,
     blocks = [],
     activeBlock,
     blockCount = 0,
-    colorBg = 'rgba(196, 207, 161, 1)',
-    colorBlock = 'rgba(107, 115, 83, 1)';
+    colorBg = 'rgb(196, 207, 161)',
+    colorBlock = 'rgb(107, 115, 83)';
 
 function startGame()
 {
@@ -101,14 +101,13 @@ function rotateActiveBlock()
 function countBlocks()
 {
   var count = 0,
-      data = context.getImageData(0, 0, context.canvas.width, context.canvas.height);
+      data = collisionCtx.getImageData(0, 0, 10, 20);
 
   for(var x = 0; x < 10; x++)
   {
     for(var y = 0; y < 20; y++)
     {
-      var pixel = data.data[((y * (imageData.width * 4)) + (x * 4))];
-      debugger;
+      var pixel = data.data[((y * (10 * 4)) + (x * 4))];
     }
   }
 
@@ -126,6 +125,7 @@ function init(){
   canvas.height = window.innerHeight;
   canvas.width = 10 * canvas.height / 20;
   context = canvas.getContext('2d');
+  context.imageSmoothingEnabled = false;
 
   //https://stackoverflow.com/questions/43369748/how-to-render-offscreen-canvas-properly
   var collisionCanvas = document.createElement('canvas');
@@ -269,22 +269,25 @@ function gameLoop(deltaTime)
     this.counter = 0;
   }
 
-  context.save();
-
-  context.fillStyle = colorBg;
-  context.fillRect(0, 0, 480, 720);
+  collisionCtx.save();
+  collisionCtx.fillStyle = colorBg;
+  collisionCtx.fillRect(0, 0, 10, 20);
 
   for(var i = 0; i < blocks.length; i++)
   {
-    context.save();
-    context.fillStyle = colorBlock;
-    context.scale(blockSize, blockSize);
-    context.translate(blocks[i].x * 1 + 0.5, blocks[i].y + 0.5);
-    context.rotate(blocks[i].angle * 0.01745329251); //Math.PI / 180
-    context.translate(-0.5, -0.5);
-    context.fill(blocks[i].mesh);
-    context.restore();
+    collisionCtx.save();
+    collisionCtx.fillStyle = colorBlock;
+    collisionCtx.translate(blocks[i].x * 1 + 0.5, blocks[i].y + 0.5);
+    collisionCtx.rotate(blocks[i].angle * 0.01745329251); //Math.PI / 180
+    collisionCtx.translate(-0.5, -0.5);
+    collisionCtx.fill(blocks[i].mesh);
+    collisionCtx.restore();
   }
+  collisionCtx.restore();
+
+  context.save();
+  context.scale(blockSize, blockSize);
+  context.drawImage(collisionCtx.canvas, 0, 0);
   context.restore();
 
   //$("#debug").html(deltaTime);
