@@ -134,44 +134,44 @@ function init(){
   blockStyles[0] = new Path2D();
   for(var i = 0; i < 4; i++)
   {
-    blockStyles[0].rect(0, -(i-1) * blockSize, blockSize, blockSize);
+    blockStyles[0].rect(0, -(i-1) * 1, 1, 1);
   }
   //L
   blockStyles[1] = new Path2D();
-  blockStyles[1].rect(0,         blockSize,  blockSize, blockSize);
-  blockStyles[1].rect(0,         0,          blockSize, blockSize);
-  blockStyles[1].rect(0,         -blockSize, blockSize, blockSize);
-  blockStyles[1].rect(blockSize, blockSize,  blockSize, blockSize);
+  blockStyles[1].rect(0, 1,  1, 1);
+  blockStyles[1].rect(0, 0, 1, 1);
+  blockStyles[1].rect(0, -1, 1, 1);
+  blockStyles[1].rect(1, 1,  1, 1);
   //L2
   blockStyles[2] = new Path2D();
-  blockStyles[2].rect(0,         blockSize,  blockSize, blockSize);
-  blockStyles[2].rect(0,         0,          blockSize, blockSize);
-  blockStyles[2].rect(0,         -blockSize, blockSize, blockSize);
-  blockStyles[2].rect(-blockSize, blockSize, blockSize, blockSize);
+  blockStyles[2].rect(0,1,  1, 1);
+  blockStyles[2].rect(0,0,1, 1);
+  blockStyles[2].rect(0,-1, 1, 1);
+  blockStyles[2].rect(-1, 1, 1, 1);
   //var1
   blockStyles[3] = new Path2D();
-  blockStyles[3].rect(0,         blockSize,  blockSize, blockSize);
-  blockStyles[3].rect(0,         0,          blockSize, blockSize);
-  blockStyles[3].rect(-blockSize,0,          blockSize, blockSize);
-  blockStyles[3].rect(blockSize, blockSize,  blockSize, blockSize);
+  blockStyles[3].rect(0,1,  1, 1);
+  blockStyles[3].rect(0,0,1, 1);
+  blockStyles[3].rect(-1,0,1, 1);
+  blockStyles[3].rect(1, 1,  1, 1);
   //var2
   blockStyles[4] = new Path2D();
-  blockStyles[4].rect(0,         blockSize,  blockSize, blockSize);
-  blockStyles[4].rect(0,         0,          blockSize, blockSize);
-  blockStyles[4].rect(-blockSize,blockSize,  blockSize, blockSize);
-  blockStyles[4].rect(blockSize, 0,          blockSize, blockSize);
+  blockStyles[4].rect(0,1,  1, 1);
+  blockStyles[4].rect(0,0,1, 1);
+  blockStyles[4].rect(-1,1,  1, 1);
+  blockStyles[4].rect(1, 0,1, 1);
   //cube
   blockStyles[5] = new Path2D();
-  blockStyles[5].rect(0,         blockSize,  blockSize, blockSize);
-  blockStyles[5].rect(0,         0,          blockSize, blockSize);
-  blockStyles[5].rect(blockSize, 0,          blockSize, blockSize);
-  blockStyles[5].rect(blockSize, blockSize,  blockSize, blockSize);
+  blockStyles[5].rect(0,1,  1, 1);
+  blockStyles[5].rect(0,0,1, 1);
+  blockStyles[5].rect(1, 0,1, 1);
+  blockStyles[5].rect(1, 1,  1, 1);
   //var3
   blockStyles[6] = new Path2D();
-  blockStyles[6].rect(0,         -blockSize,  blockSize, blockSize);
-  blockStyles[6].rect(0,         0,          blockSize, blockSize);
-  blockStyles[6].rect(-blockSize,0,          blockSize, blockSize);
-  blockStyles[6].rect(blockSize, 0,  blockSize, blockSize);
+  blockStyles[6].rect(0,-1,  1, 1);
+  blockStyles[6].rect(0,0,1, 1);
+  blockStyles[6].rect(-1,0,1, 1);
+  blockStyles[6].rect(1, 0,  1, 1);
 
   blocks[0] = createTetrisBlock(6);
   activeBlock = blocks[0];
@@ -272,9 +272,10 @@ function gameLoop(deltaTime)
   {
     context.save();
     context.fillStyle = colorBlock;
-    context.translate(blocks[i].x * blockSize + (blockSize * 0.5), blocks[i].y * blockSize + (blockSize * 0.5));
+    context.scale(blockSize, blockSize);
+    context.translate(blocks[i].x * 1 + 0.5, blocks[i].y + 0.5);
     context.rotate(blocks[i].angle * 0.01745329251); //Math.PI / 180
-    context.translate(-blockSize * 0.5, -blockSize * 0.5);
+    context.translate(-0.5, -0.5);
     context.fill(blocks[i].mesh);
     context.restore();
   }
