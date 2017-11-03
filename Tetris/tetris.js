@@ -77,12 +77,26 @@ function moveActiveBlock(mode)
   {
     case "left":
       if(activeBlock.x > 0)
+      {
         activeBlock.x--;
+        if(drawCtx(collisionCtx))
+        {
+          activeBlock.x++;
+          drawCtx(collisionCtx);
+        }
+      }
     break;
 
     case "right":
       if(activeBlock.x + 1 < 10)
+      {
         activeBlock.x++;
+        if(drawCtx(collisionCtx))
+        {
+          activeBlock.x--;
+          drawCtx(collisionCtx);
+        }
+      }
     break;
 
     case "down":
@@ -100,7 +114,13 @@ function rotateActiveBlock()
   if(activeBlock.angle >= 360)
     activeBlock.angle = 0;
 
-  drawCtx(collisionCtx);
+  if(drawCtx(collisionCtx))
+  {
+    if(activeBlock.angle == 0)
+      activeBlock.angle = 360;
+    activeBlock.angle -= 90;
+    drawCtx(collisionCtx);
+  }
 }
 
 function doesCollide()
