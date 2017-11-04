@@ -139,6 +139,9 @@ function doesCollide()
     }
   }
 
+  if(count != blockCount)
+    console.log("COLLISION!");
+
   return (count != blockCount);
 }
 
@@ -168,28 +171,30 @@ function isARowFull()
 function deleteRow(rowNr)
 {
   var count = 0,
-      data = collisionCtx.getImageData(0, 0, 10, 20);
+      data = freezeContext.getImageData(0, 0, 10, 20);
 
-  collisionCtx.putImageData(data, 0, 0, 0, 1, 20, rowNr);
-  //collisionCtx.putImageData(data, 0, 1);
+  data.data.slice(10 * rowNr, 10);
+  //freezeContext.putImageData(data, 0, 0, 0, 1, 10, rowNr+1);
+  freezeContext.putImageData(data, 0, 1);
+  blockCount -= 10;
 }
 
 function drawCtx(ctx)
 {
   ctx.save();
-  ctx.fillStyle = colorBg;
-  ctx.fillRect(0, 0, 10, 20);
+  ctx.drawImage(freezeContext.canvas, 0, 0);
+  ctx.restore();
 
-  for(var i = 0; i < blocks.length; i++)
-  {
-    ctx.save();
-    ctx.fillStyle = colorBlock;
-    ctx.translate(blocks[i].x * 1 + 0.5, blocks[i].y + 0.5);
-    ctx.rotate(blocks[i].angle * 0.01745329251); //Math.PI / 180
-    ctx.translate(-0.5, -0.5);
-    ctx.fill(blocks[i].mesh);
-    ctx.restore();
-  }
+  //ctx.fillStyle = colorBg;
+  //ctx.fillRect(0, 0, 10, 20);
+
+  ctx.save();
+  ctx.fillStyle = colorBlock;
+  ctx.translate(activeBlock.x * 1 + 0.5, activeBlock.y + 0.5);
+  ctx.rotate(activeBlock.angle * 0.01745329251); //Math.PI / 180
+  ctx.translate(-0.5, -0.5);
+  ctx.fill(activeBlock.mesh);
+
   ctx.restore();
 
   //console.log("collision:" + doesCollide());
@@ -214,11 +219,15 @@ function init(){
   collisionCanvas.height = 20;
   collisionCanvas.width = 10;
   collisionCtx = collisionCanvas.getContext('2d');
+  collisionCtx.fillStyle = colorBg;
+  collisionCtx.fillRect(0, 0, 10, 20);
 
   var freezeCanvas = document.createElement('canvas');
   freezeCanvas.height = 20;
   freezeCanvas.width = 10;
   freezeContext = freezeCanvas.getContext('2d');
+  freezeContext.fillStyle = colorBg;
+  freezeContext.fillRect(0, 0, 10, 20);
 
   blockSize = canvas.width / 10;
 
