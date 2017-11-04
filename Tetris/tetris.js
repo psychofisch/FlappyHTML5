@@ -444,6 +444,7 @@ function startGame()
   blocks = [];
   blocks[0] = createTetrisBlock(0);
   activeBlock = blocks[0];
+  blockCount = 4;
   togglePause();
 }
 
