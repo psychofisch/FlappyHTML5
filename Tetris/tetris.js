@@ -3,6 +3,8 @@
 //some init stuff
 var gamePause = true,
     context,
+    playWidth = 10,
+    playHeight = 18,
     collisionContext,
     freezeContext,
     gameLoopInterval = undefined,
@@ -22,7 +24,7 @@ var gamePause = true,
     colorBg = 'rgb(196, 207, 161)',
     colorBlock = 'rgb(107, 115, 83)',
     startBtn,
-    leftBtn, rightBtn, downBtn, upBtn;
+    leftBtn, rightBtn, downBtn, upBtn, escBtn;
 
 function togglePause()
 {
@@ -47,11 +49,24 @@ function showStartBtn()
 function drawControls()
 {
   context.save();
-  context.fillStyle = "rgba(0,0,0,0.5)";
+  context.fillStyle = "rgba(0,0,0,0.3)";
   context.fillRect(leftBtn.x, leftBtn.y, leftBtn.width, leftBtn.height);
   context.fillRect(rightBtn.x, rightBtn.y, rightBtn.width, rightBtn.height);
   context.fillRect(downBtn.x, downBtn.y, downBtn.width, downBtn.height);
   context.fillRect(upBtn.x, upBtn.y, upBtn.width, upBtn.height);
+  context.fillRect(escBtn.x, escBtn.y, escBtn.width, escBtn.height);
+
+  var offset;
+  context.fillStyle = "rgba(255,255,255,0.5)";
+  context.textBaseline = "hanging";
+  context.font = leftBtn.height + "px Monospace";
+  offset = context.measureText("←").width;
+  context.fillText("←", leftBtn.x + (leftBtn.width - offset) * 0.5, leftBtn.y);
+  context.fillText("→", rightBtn.x + (leftBtn.width - offset) * 0.5, rightBtn.y);
+  offset = context.measureText("↓").width;
+  context.fillText("↓", downBtn.x + (leftBtn.width - offset) * 0.5, downBtn.y + 5);
+  context.fillText("↑", upBtn.x + (leftBtn.width - offset) * 0.5, upBtn.y + 5);
+  context.fillText("X", escBtn.x + (leftBtn.width - offset) * 0.5, escBtn.y + 5);
   context.restore();
 }
 
@@ -109,6 +124,10 @@ function click(e)
     {
       rotateActiveBlock();
     }
+    else if(contains(e.clientX, e.clientY, escBtn))
+    {
+      togglePause();
+    }
 
     if(debug)
       console.log("Jump!");
@@ -142,7 +161,7 @@ function moveActiveBlock(mode)
     break;
 
     case "right":
-      if(activeBlock.x + 1 < 10)
+      if(activeBlock.x + 1 < playWidth)
       {
         activeBlock.x++;
         if(drawCtx(collisionCtx))
@@ -180,13 +199,13 @@ function rotateActiveBlock()
 function doesCollide()
 {
   var count = 0,
-      data = collisionCtx.getImageData(0, 0, 10, 20);
+      data = collisionCtx.getImageData(0, 0, playWidth, playHeight);
 
-  for(var x = 0; x < 10; x++)
+  for(var x = 0; x < playWidth; x++)
   {
-    for(var y = 0; y < 20; y++)
+    for(var y = 0; y < playHeight; y++)
     {
-      var pixel = data.data[((y * (10 * 4)) + (x * 4))];
+      var pixel = data.data[((y * (playWidth * 4)) + (x * 4))];
       if(pixel == colorBlock.substr(4,3))//compare red value
         count++;
     }
@@ -201,19 +220,19 @@ function doesCollide()
 function isARowFull()
 {
   var count = 0,
-      data = collisionCtx.getImageData(0, 0, 10, 20);
+      data = collisionCtx.getImageData(0, 0, playWidth, playHeight);
 
-  for(var y = 0; y < 20; y++)
+  for(var y = 0; y < playHeight; y++)
   {
     count = 0;
-    for(var x = 0; x < 10; x++)
+    for(var x = 0; x < playWidth; x++)
     {
-      var pixel = data.data[((y * (10 * 4)) + (x * 4))];
+      var pixel = data.data[((y * (playWidth * 4)) + (x * 4))];
       if(pixel == colorBlock.substr(4,3))//compare red value
         count++;
     }
 
-    if(count == 10)
+    if(count == playWidth)
     {
       console.log("delete row nr " + y);
       deleteRow(y);
@@ -223,17 +242,11 @@ function isARowFull()
 
 function deleteRow(rowNr)
 {
-  // var count = 0,
-  //     data = freezeContext.getImageData(0, 0, 10, 20);
-  //
-  // data.data.slice(10 * rowNr, 10);
-  // //freezeContext.putImageData(data, 0, 0, 0, 1, 10, rowNr+1);
-  // freezeContext.putImageData(data, 0, 1);
   freezeContext.save();
-  freezeContext.drawImage(freezeContext.canvas, 0, 0, 10, rowNr, 0, 1, 10, rowNr);
+  freezeContext.drawImage(freezeContext.canvas, 0, 0, playWidth, rowNr, 0, 1, playWidth, rowNr);
   freezeContext.restore();
 
-  blockCount -= 10;
+  blockCount -= playWidth;
 }
 
 function drawCtx(ctx)
@@ -273,23 +286,25 @@ function init(){
   //Original Tetris: 10 blocks wide, 18 blocks high
   var canvas = document.getElementById('viewport');
   canvas.height = window.innerHeight;
-  canvas.width = 10 * canvas.height / 20;
+  canvas.width = playWidth * canvas.height / playHeight;
+
+
+
   context = canvas.getContext('2d');
   context.imageSmoothingEnabled = false;
   clearCtx(context);
-
   //https://stackoverflow.com/questions/43369748/how-to-render-offscreen-canvas-properly
   var collisionCanvas = document.createElement('canvas');
-  collisionCanvas.height = 20;
-  collisionCanvas.width = 10;
+  collisionCanvas.height = playHeight;
+  collisionCanvas.width = playWidth;
   collisionCtx = collisionCanvas.getContext('2d');
 
   var freezeCanvas = document.createElement('canvas');
-  freezeCanvas.height = 20;
-  freezeCanvas.width = 10;
+  freezeCanvas.height = playHeight;
+  freezeCanvas.width = playWidth;
   freezeContext = freezeCanvas.getContext('2d');
 
-  blockSize = canvas.width / 10;
+  blockSize = canvas.width / playWidth;
 
   blockStyles = [];
   //Line
@@ -365,6 +380,12 @@ function init(){
   downBtn.y = context.canvas.height * 0.9;
   downBtn.height = context.canvas.height * 0.1;
   downBtn.width = buttonSize;
+
+  escBtn = {};
+  escBtn.x = 0;
+  escBtn.y = 0;
+  escBtn.height = context.canvas.height * 0.1;
+  escBtn.width = buttonSize;
 
   if(gotInit == false)
   {
