@@ -170,12 +170,16 @@ function isARowFull()
 
 function deleteRow(rowNr)
 {
-  var count = 0,
-      data = freezeContext.getImageData(0, 0, 10, 20);
+  // var count = 0,
+  //     data = freezeContext.getImageData(0, 0, 10, 20);
+  //
+  // data.data.slice(10 * rowNr, 10);
+  // //freezeContext.putImageData(data, 0, 0, 0, 1, 10, rowNr+1);
+  // freezeContext.putImageData(data, 0, 1);
+  freezeContext.save();
+  freezeContext.drawImage(freezeContext.canvas, 0, 0, 10, rowNr, 0, 1, 10, rowNr);
+  freezeContext.restore();
 
-  data.data.slice(10 * rowNr, 10);
-  //freezeContext.putImageData(data, 0, 0, 0, 1, 10, rowNr+1);
-  freezeContext.putImageData(data, 0, 1);
   blockCount -= 10;
 }
 
