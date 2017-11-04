@@ -1,25 +1,5 @@
 //Fischer Thomas gs16m022
 
-function togglePause()
-{
-  if(debug)
-    console.log("PAUSE!");
-  gamePause = !gamePause;
-}
-
-function createTetrisBlock(type)
-{
-  var tmp = {};
-  tmp.x = 4;
-  tmp.y = 4;
-  tmp.angle = 0;
-  tmp.style = type;
-  tmp.mesh = blockStyles[type];
-  blockCount += 4;
-
-  return tmp;
-}
-
 //some init stuff
 var gamePause = true,
     context,
@@ -40,7 +20,61 @@ var gamePause = true,
     activeBlock,
     blockCount = 0,
     colorBg = 'rgb(196, 207, 161)',
-    colorBlock = 'rgb(107, 115, 83)';
+    colorBlock = 'rgb(107, 115, 83)',
+    startBtn,
+    leftBtn, rightBtn, downBtn, upBtn;
+
+function togglePause()
+{
+  if(debug)
+    console.log("PAUSE!");
+  gamePause = !gamePause;
+  showStartBtn();
+}
+
+function showStartBtn()
+{
+  context.save();
+  context.fillStyle = colorBlock;
+  context.fillRect(startBtn.x, startBtn.y, startBtn.width, startBtn.height);
+  context.fillStyle = colorBg;
+  context.textBaseline = "hanging";
+  context.font = startBtn.height + "px Monospace";
+  context.fillText("START", startBtn.x, startBtn.y);
+  context.restore();
+}
+
+function drawControls()
+{
+  context.save();
+  context.fillStyle = "rgba(0,0,0,0.5)";
+  context.fillRect(leftBtn.x, leftBtn.y, leftBtn.width, leftBtn.height);
+  context.fillRect(rightBtn.x, rightBtn.y, rightBtn.width, rightBtn.height);
+  context.fillRect(downBtn.x, downBtn.y, downBtn.width, downBtn.height);
+  context.fillRect(upBtn.x, upBtn.y, upBtn.width, upBtn.height);
+  context.restore();
+}
+
+function contains(x, y, rect)
+{
+  return (x > rect.x
+      && y > rect.y
+      && x < rect.x + rect.width
+      && y < rect.y + rect.height);
+}
+
+function createTetrisBlock(type)
+{
+  var tmp = {};
+  tmp.x = 4;
+  tmp.y = 4;
+  tmp.angle = 0;
+  tmp.style = type;
+  tmp.mesh = blockStyles[type];
+  blockCount += 4;
+
+  return tmp;
+}
 
 function startGame()
 {
@@ -59,14 +93,33 @@ function startGame()
   //window.requestAnimationFrame(gameLoop);
 }
 
-function click()
+function click(e)
 {
   if(!gamePause)
   {
+    if(contains(e.clientX, e.clientY, leftBtn))
+    {
+      moveActiveBlock("left");
+    }
+    else if(contains(e.clientX, e.clientY, rightBtn))
+    {
+      moveActiveBlock("right");
+    }
+    else if(contains(e.clientX, e.clientY, upBtn))
+    {
+      rotateActiveBlock();
+    }
+
     if(debug)
       console.log("Jump!");
   }
   else {
+    console.log(e.clientX + ":" + e.clientY);
+    if(contains(e.clientX, e.clientY, startBtn))
+    {
+      console.log("START!");
+      startGame();
+    }
     if(debug)
       console.log("Put Your Hands Up In The Air!");
   }
@@ -205,6 +258,12 @@ function drawCtx(ctx)
   return doesCollide();
 }
 
+function clearCtx(ctx)
+{
+  ctx.fillStyle = colorBg;
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+}
+
 //handler
 $(document).ready(function() {
   init();
@@ -217,21 +276,18 @@ function init(){
   canvas.width = 10 * canvas.height / 20;
   context = canvas.getContext('2d');
   context.imageSmoothingEnabled = false;
+  clearCtx(context);
 
   //https://stackoverflow.com/questions/43369748/how-to-render-offscreen-canvas-properly
   var collisionCanvas = document.createElement('canvas');
   collisionCanvas.height = 20;
   collisionCanvas.width = 10;
   collisionCtx = collisionCanvas.getContext('2d');
-  collisionCtx.fillStyle = colorBg;
-  collisionCtx.fillRect(0, 0, 10, 20);
 
   var freezeCanvas = document.createElement('canvas');
   freezeCanvas.height = 20;
   freezeCanvas.width = 10;
   freezeContext = freezeCanvas.getContext('2d');
-  freezeContext.fillStyle = colorBg;
-  freezeContext.fillRect(0, 0, 10, 20);
 
   blockSize = canvas.width / 10;
 
@@ -244,34 +300,34 @@ function init(){
   }
   //L
   blockStyles[1] = new Path2D();
-  blockStyles[1].rect(0, 1,  1, 1);
+  blockStyles[1].rect(0, 1, 1, 1);
   blockStyles[1].rect(0, 0, 1, 1);
   blockStyles[1].rect(0, -1, 1, 1);
-  blockStyles[1].rect(1, 1,  1, 1);
+  blockStyles[1].rect(1, 1, 1, 1);
   //L2
   blockStyles[2] = new Path2D();
-  blockStyles[2].rect(0,1,  1, 1);
-  blockStyles[2].rect(0,0,1, 1);
-  blockStyles[2].rect(0,-1, 1, 1);
+  blockStyles[2].rect(0, 1, 1, 1);
+  blockStyles[2].rect(0, 0, 1, 1);
+  blockStyles[2].rect(0, -1, 1, 1);
   blockStyles[2].rect(-1, 1, 1, 1);
   //var1
   blockStyles[3] = new Path2D();
-  blockStyles[3].rect(0,1,  1, 1);
-  blockStyles[3].rect(0,0,1, 1);
-  blockStyles[3].rect(-1,0,1, 1);
-  blockStyles[3].rect(1, 1,  1, 1);
+  blockStyles[3].rect(0, 1,  1, 1);
+  blockStyles[3].rect(0, 0, 1, 1);
+  blockStyles[3].rect(-1, 0, 1, 1);
+  blockStyles[3].rect(1, 1, 1, 1);
   //var2
   blockStyles[4] = new Path2D();
-  blockStyles[4].rect(0,1,  1, 1);
-  blockStyles[4].rect(0,0,1, 1);
-  blockStyles[4].rect(-1,1,  1, 1);
-  blockStyles[4].rect(1, 0,1, 1);
+  blockStyles[4].rect(0, 1, 1, 1);
+  blockStyles[4].rect(0, 0, 1, 1);
+  blockStyles[4].rect(-1, 1, 1, 1);
+  blockStyles[4].rect(1, 0, 1, 1);
   //cube
   blockStyles[5] = new Path2D();
-  blockStyles[5].rect(0,1,  1, 1);
-  blockStyles[5].rect(0,0,1, 1);
-  blockStyles[5].rect(1, 0,1, 1);
-  blockStyles[5].rect(1, 1,  1, 1);
+  blockStyles[5].rect(0, 1, 1, 1);
+  blockStyles[5].rect(0, 0, 1, 1);
+  blockStyles[5].rect(1, 0, 1, 1);
+  blockStyles[5].rect(1, 1, 1, 1);
   //var3
   blockStyles[6] = new Path2D();
   blockStyles[6].rect(0,-1,  1, 1);
@@ -279,11 +335,41 @@ function init(){
   blockStyles[6].rect(-1,0,1, 1);
   blockStyles[6].rect(1, 0,  1, 1);
 
-  blocks[0] = createTetrisBlock(0);
-  activeBlock = blocks[0];
+  startBtn = {};
+  startBtn.width = 0.9 * context.canvas.width;
+  startBtn.height = 0.3 * startBtn.width;
+  startBtn.x = (context.canvas.width * 0.5) - (startBtn.width * 0.5);
+  startBtn.y = (context.canvas.height * 0.5) - (startBtn.height * 0.5);
+
+  var buttonSize = 0.25 * context.canvas.width;
+  leftBtn = {};
+  leftBtn.x = 0;
+  leftBtn.y = context.canvas.height * 0.9;
+  leftBtn.height = context.canvas.height * 0.1;
+  leftBtn.width = buttonSize;
+
+  rightBtn = {};
+  rightBtn.x = buttonSize;
+  rightBtn.y = context.canvas.height * 0.9;
+  rightBtn.height = context.canvas.height * 0.1;
+  rightBtn.width = buttonSize;
+
+  upBtn = {};
+  upBtn.x = buttonSize * 2;
+  upBtn.y = context.canvas.height * 0.9;
+  upBtn.height = context.canvas.height * 0.1;
+  upBtn.width = buttonSize;
+
+  downBtn = {};
+  downBtn.x = buttonSize * 3;
+  downBtn.y = context.canvas.height * 0.9;
+  downBtn.height = context.canvas.height * 0.1;
+  downBtn.width = buttonSize;
 
   if(gotInit == false)
   {
+    $(document).click(click);
+
     $(document).keydown(function(event)
     {
       if(debug && false)
@@ -321,10 +407,23 @@ function init(){
   gotInit = true;
 
   highscore = 0;
-  togglePause();
+  showStartBtn();
+  //togglePause();
 
   //gameLoopInterval = setInterval(function(){gameLoop(500);}, 500);
   window.requestAnimationFrame(requestFrameHandler);
+}
+
+function startGame()
+{
+  console.log("starting game...");
+  clearCtx(context);
+  clearCtx(collisionCtx);
+  clearCtx(freezeContext);
+  blocks = [];
+  blocks[0] = createTetrisBlock(0);
+  activeBlock = blocks[0];
+  togglePause();
 }
 
 function requestFrameHandler(timeAlive)
@@ -358,13 +457,17 @@ function gameLoop(deltaTime)
 
   this.counter += deltaTime;
 
-  if(this.counter >= 0.2)
+  if(this.counter >= 0.5)
   {
     activeBlock.y++;
     if(drawCtx(collisionCtx))
     {
       activeBlock.y--;
-      drawCtx(collisionCtx);
+      if(drawCtx(collisionCtx))
+      {
+        togglePause();
+        return;
+      }
       drawCtx(freezeContext);
       isARowFull();
       blocks[blocks.length] = createTetrisBlock(Math.floor(Math.random()*7));
@@ -382,5 +485,6 @@ function gameLoop(deltaTime)
   //context.drawImage(freezeContext.canvas, 0, 0);
   context.restore();
 
+  drawControls();
   //$("#debug").html(deltaTime);
 }
