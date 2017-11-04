@@ -24,6 +24,7 @@ function createTetrisBlock(type)
 var gamePause = true,
     context,
     collisionContext,
+    freezeContext,
     gameLoopInterval = undefined,
     startFrame = undefined,
     lastFrame = 0,
@@ -39,7 +40,7 @@ var gamePause = true,
     activeBlock,
     blockCount = 0,
     colorBg = 'rgb(196, 207, 161)',
-    colorBlock;
+    colorBlock = 'rgb(107, 115, 83)';
 
 function startGame()
 {
@@ -141,6 +142,38 @@ function doesCollide()
   return (count != blockCount);
 }
 
+function isARowFull()
+{
+  var count = 0,
+      data = collisionCtx.getImageData(0, 0, 10, 20);
+
+  for(var y = 0; y < 20; y++)
+  {
+    count = 0;
+    for(var x = 0; x < 10; x++)
+    {
+      var pixel = data.data[((y * (10 * 4)) + (x * 4))];
+      if(pixel == colorBlock.substr(4,3))//compare red value
+        count++;
+    }
+
+    if(count == 10)
+    {
+      console.log("delete row nr " + y);
+      deleteRow(y);
+    }
+  }
+}
+
+function deleteRow(rowNr)
+{
+  var count = 0,
+      data = collisionCtx.getImageData(0, 0, 10, 20);
+
+  collisionCtx.putImageData(data, 0, 0, 0, 1, 20, rowNr);
+  //collisionCtx.putImageData(data, 0, 1);
+}
+
 function drawCtx(ctx)
 {
   ctx.save();
@@ -181,6 +214,11 @@ function init(){
   collisionCanvas.height = 20;
   collisionCanvas.width = 10;
   collisionCtx = collisionCanvas.getContext('2d');
+
+  var freezeCanvas = document.createElement('canvas');
+  freezeCanvas.height = 20;
+  freezeCanvas.width = 10;
+  freezeContext = freezeCanvas.getContext('2d');
 
   blockSize = canvas.width / 10;
 
@@ -227,14 +265,6 @@ function init(){
   blockStyles[6].rect(0,0,1, 1);
   blockStyles[6].rect(-1,0,1, 1);
   blockStyles[6].rect(1, 0,  1, 1);
-
-  colorBlock = 'rgb(107, 115, 83)';
-  // colorBlock[0] = 'rgb(100, 106, 77)';
-  // colorBlock[0] = 'rgb(107, 115, 83)';
-  // colorBlock[0] = 'rgb(107, 115, 83)';
-  // colorBlock[0] = 'rgb(107, 115, 83)';
-  // colorBlock[0] = 'rgb(107, 115, 83)';
-  // colorBlock[0] = 'rgb(107, 115, 83)';
 
   blocks[0] = createTetrisBlock(0);
   activeBlock = blocks[0];
@@ -322,6 +352,8 @@ function gameLoop(deltaTime)
     {
       activeBlock.y--;
       drawCtx(collisionCtx);
+      drawCtx(freezeContext);
+      isARowFull();
       blocks[blocks.length] = createTetrisBlock(Math.floor(Math.random()*7));
       activeBlock = blocks[blocks.length - 1];
     }
@@ -334,6 +366,7 @@ function gameLoop(deltaTime)
   context.save();
   context.scale(blockSize, blockSize);
   context.drawImage(collisionCtx.canvas, 0, 0);
+  //context.drawImage(freezeContext.canvas, 0, 0);
   context.restore();
 
   //$("#debug").html(deltaTime);
