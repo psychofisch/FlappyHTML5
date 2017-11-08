@@ -1,4 +1,4 @@
-//Fischer Thomas gs16m022
+//Fischer Thomas, Radlwimmer Stefan
 
 //some init stuff
 var gamePause = true,
@@ -10,12 +10,8 @@ var gamePause = true,
     gameLoopInterval = undefined,
     startFrame = undefined,
     lastFrame = 0,
-    //deltaTime = 0,
-    scorefield,
-    highscore = 0,
-    highscoreField,
-    gotInit = false,
-    debug = true,
+    stepTime = 0.25,
+    debug = false,
     blockSize,
     blockStyles,
     blocks = [],
@@ -82,7 +78,7 @@ function createTetrisBlock(type)
 {
   var tmp = {};
   tmp.x = 4;
-  tmp.y = 4;
+  tmp.y = 1;
   tmp.angle = 0;
   tmp.style = type;
   tmp.mesh = blockStyles[type];
@@ -103,9 +99,6 @@ function startGame()
   viewport.click("click", click);
 
   togglePause();
-
-  //gameLoopInterval = setInterval(gameLoopFixed, 1000);
-  //window.requestAnimationFrame(gameLoop);
 }
 
 function click(e)
@@ -133,10 +126,12 @@ function click(e)
       console.log("Jump!");
   }
   else {
-    console.log(e.clientX + ":" + e.clientY);
+    if(debug)
+      console.log(e.clientX + ":" + e.clientY);
     if(contains(e.clientX, e.clientY, startBtn))
     {
-      console.log("START!");
+      if(debug)
+        console.log("START!");
       startGame();
     }
     if(debug)
@@ -211,7 +206,7 @@ function doesCollide()
     }
   }
 
-  if(count != blockCount)
+  if(debug && count != blockCount)
     console.log("COLLISION!");
 
   return (count != blockCount);
@@ -234,7 +229,8 @@ function isARowFull()
 
     if(count == playWidth)
     {
-      console.log("delete row nr " + y);
+      if(debug)
+        console.log("delete row nr " + y);
       deleteRow(y);
     }
   }
@@ -255,19 +251,14 @@ function drawCtx(ctx)
   ctx.drawImage(freezeContext.canvas, 0, 0);
   ctx.restore();
 
-  //ctx.fillStyle = colorBg;
-  //ctx.fillRect(0, 0, 10, 20);
-
   ctx.save();
   ctx.fillStyle = colorBlock;
   ctx.translate(activeBlock.x * 1 + 0.5, activeBlock.y + 0.5);
   ctx.rotate(activeBlock.angle * 0.01745329251); //Math.PI / 180
   ctx.translate(-0.5, -0.5);
   ctx.fill(activeBlock.mesh);
-
   ctx.restore();
 
-  //console.log("collision:" + doesCollide());
   return doesCollide();
 }
 
@@ -387,49 +378,42 @@ function init(){
   escBtn.height = context.canvas.height * 0.1;
   escBtn.width = buttonSize;
 
-  if(gotInit == false)
+  $(document).click(click);
+
+  $(document).keydown(function(event)
   {
-    $(document).click(click);
-
-    $(document).keydown(function(event)
+    if(debug && false)
+      console.log(event);
+    switch(event.key)
     {
-      if(debug && false)
-        console.log(event);
-      switch(event.key)
-      {
-        case "A"://fallthrough
-        case "a":
-          moveActiveBlock("left");
-        break;
+      case "A"://fallthrough
+      case "a":
+        moveActiveBlock("left");
+      break;
 
-        case "D"://fallthrough
-        case "d":
-          moveActiveBlock("right");
-        break;
+      case "D"://fallthrough
+      case "d":
+        moveActiveBlock("right");
+      break;
 
-        case "W"://fallthrough
-        case "w":
-          rotateActiveBlock();
-        break;
+      case "W"://fallthrough
+      case "w":
+        rotateActiveBlock();
+      break;
 
-        case "S"://fallthrough
-        case "s":
-          moveActiveBlock("down");
-        break;
+      case "S"://fallthrough
+      case "s":
+        moveActiveBlock("down");
+      break;
 
-        case "Escape":
-          if(gamePause == false)
-            togglePause();
-        break;
-      }
-    });
-  }
+      case "Escape":
+        if(gamePause == false)
+          togglePause();
+      break;
+    }
+  });
 
-  gotInit = true;
-
-  highscore = 0;
   showStartBtn();
-  //togglePause();
 
   //gameLoopInterval = setInterval(function(){gameLoop(500);}, 500);
   window.requestAnimationFrame(requestFrameHandler);
@@ -437,7 +421,8 @@ function init(){
 
 function startGame()
 {
-  console.log("starting game...");
+  if(debug)
+    console.log("starting game...");
   clearCtx(context);
   clearCtx(collisionCtx);
   clearCtx(freezeContext);
@@ -464,8 +449,6 @@ function requestFrameHandler(timeAlive)
 
   gameLoop(deltaTime);
 
-  //console.log(deltaTime);
-
   window.requestAnimationFrame(requestFrameHandler);
 }
 
@@ -479,7 +462,7 @@ function gameLoop(deltaTime)
 
   this.counter += deltaTime;
 
-  if(this.counter >= 0.5)
+  if(this.counter >= stepTime)
   {
     activeBlock.y++;
     if(drawCtx(collisionCtx))
@@ -499,14 +482,10 @@ function gameLoop(deltaTime)
     this.counter = 0;
   }
 
-  //console.log(doesCollide());
-
   context.save();
   context.scale(blockSize, blockSize);
   context.drawImage(collisionCtx.canvas, 0, 0);
-  //context.drawImage(freezeContext.canvas, 0, 0);
   context.restore();
 
   drawControls();
-  //$("#debug").html(deltaTime);
 }
