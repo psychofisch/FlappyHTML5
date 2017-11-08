@@ -183,7 +183,11 @@ function moveActiveBlock(mode)
     break;
 
     case "down":
-      console.log("moving active block down is not implemented yet!");
+      do{
+        activeBlock.y++;
+      }while(!drawCtx(collisionCtx));
+      activeBlock.y--;
+      drawCtx(collisionCtx);
     break;
   }
 
