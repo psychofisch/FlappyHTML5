@@ -19,8 +19,8 @@ var gamePause = true,
     blockCount = 0,
     colorBg = 'rgb(196, 207, 161)',
     colorBlock = 'rgb(107, 115, 83)',
-    startBtn,
-    leftBtn, rightBtn, downBtn, upBtn, escBtn;
+    startBtn, leftBtn, rightBtn, downBtn, upBtn, escBtn,
+    viewportOffset;//for mouse input on positioned viewport
 
 function togglePause()
 {
@@ -118,21 +118,25 @@ function startGame()
 
 function click(e)
 {
+  var mousePos = {};
+  mousePos.x = e.clientX - viewportOffset.x;
+  mousePos.y = e.clientY - viewportOffset.y;
+
   if(!gamePause)
   {
-    if(contains(e.clientX, e.clientY, leftBtn))
+    if(contains(mousePos.x, mousePos.y, leftBtn))
     {
       moveActiveBlock("left");
     }
-    else if(contains(e.clientX, e.clientY, rightBtn))
+    else if(contains(mousePos.x, mousePos.y, rightBtn))
     {
       moveActiveBlock("right");
     }
-    else if(contains(e.clientX, e.clientY, upBtn))
+    else if(contains(mousePos.x, mousePos.y, upBtn))
     {
       rotateActiveBlock();
     }
-    else if(contains(e.clientX, e.clientY, escBtn))
+    else if(contains(mousePos.x, mousePos.y, escBtn))
     {
       togglePause();
     }
@@ -142,8 +146,8 @@ function click(e)
   }
   else {
     if(debug)
-      console.log(e.clientX + ":" + e.clientY);
-    if(contains(e.clientX, e.clientY, startBtn))
+      console.log(mousePos.x + ":" + mousePos.y);
+    if(contains(mousePos.x, mousePos.y, startBtn))
     {
       if(debug)
         console.log("START!");
@@ -304,7 +308,10 @@ function init(){
   canvas.height = window.innerHeight;
   canvas.width = playWidth * canvas.height / playHeight;
 
-
+  viewportOffset = {};
+  viewportOffset.x = (window.innerWidth - canvas.width) * 0.5;
+  viewportOffset.y = 0;
+  $("#viewport").css("left", viewportOffset.x);
 
   context = canvas.getContext('2d');
   context.imageSmoothingEnabled = false;
