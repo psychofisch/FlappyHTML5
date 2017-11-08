@@ -44,25 +44,40 @@ function showStartBtn()
 
 function drawControls()
 {
-  context.save();
-  context.fillStyle = "rgba(0,0,0,0.3)";
-  context.fillRect(leftBtn.x, leftBtn.y, leftBtn.width, leftBtn.height);
-  context.fillRect(rightBtn.x, rightBtn.y, rightBtn.width, rightBtn.height);
-  context.fillRect(downBtn.x, downBtn.y, downBtn.width, downBtn.height);
-  context.fillRect(upBtn.x, upBtn.y, upBtn.width, upBtn.height);
-  context.fillRect(escBtn.x, escBtn.y, escBtn.width, escBtn.height);
+  if(this.canvas == undefined)
+  {
+    if(debug)
+      console.log("preparing UI canvas");
 
-  var offset;
-  context.fillStyle = "rgba(255,255,255,0.5)";
-  context.textBaseline = "hanging";
-  context.font = leftBtn.height + "px Monospace";
-  offset = context.measureText("←").width;
-  context.fillText("←", leftBtn.x + (leftBtn.width - offset) * 0.5, leftBtn.y);
-  context.fillText("→", rightBtn.x + (leftBtn.width - offset) * 0.5, rightBtn.y);
-  offset = context.measureText("↓").width;
-  context.fillText("↓", downBtn.x + (leftBtn.width - offset) * 0.5, downBtn.y + 5);
-  context.fillText("↑", upBtn.x + (leftBtn.width - offset) * 0.5, upBtn.y + 5);
-  context.fillText("X", escBtn.x + (leftBtn.width - offset) * 0.5, escBtn.y + 5);
+    this.canvas = document.createElement('canvas');
+    this.canvas.height = context.canvas.height;
+    this.canvas.width = context.canvas.height;
+    this.ctx = this.canvas.getContext('2d');
+
+    this.ctx.save();
+    this.ctx.fillStyle = "rgba(0,0,0,0.3)";
+    this.ctx.fillRect(leftBtn.x, leftBtn.y, leftBtn.width, leftBtn.height);
+    this.ctx.fillRect(rightBtn.x, rightBtn.y, rightBtn.width, rightBtn.height);
+    this.ctx.fillRect(downBtn.x, downBtn.y, downBtn.width, downBtn.height);
+    this.ctx.fillRect(upBtn.x, upBtn.y, upBtn.width, upBtn.height);
+    this.ctx.fillRect(escBtn.x, escBtn.y, escBtn.width, escBtn.height);
+
+    var offset;
+    this.ctx.fillStyle = "rgba(255,255,255,0.5)";
+    this.ctx.textBaseline = "hanging";
+    this.ctx.font = leftBtn.height + "px Monospace";
+    offset = this.ctx.measureText("←").width;
+    this.ctx.fillText("←", leftBtn.x + (leftBtn.width - offset) * 0.5, leftBtn.y);
+    this.ctx.fillText("→", rightBtn.x + (leftBtn.width - offset) * 0.5, rightBtn.y);
+    offset = this.ctx.measureText("↓").width;
+    this.ctx.fillText("↓", downBtn.x + (leftBtn.width - offset) * 0.5, downBtn.y + 5);
+    this.ctx.fillText("↑", upBtn.x + (leftBtn.width - offset) * 0.5, upBtn.y + 5);
+    this.ctx.fillText("X", escBtn.x + (leftBtn.width - offset) * 0.5, escBtn.y + 5);
+    this.ctx.restore();
+  }
+
+  context.save();
+  context.drawImage(this.canvas, 0, 0);
   context.restore();
 }
 
