@@ -10,7 +10,7 @@ var gamePause = true,
     gameLoopInterval = undefined,
     startFrame = undefined,
     lastFrame = 0,
-    stepTime = 0.25,
+    stepTime = 0.5,
     debug = false,
     blockSize,
     blockStyles,
@@ -131,6 +131,10 @@ function click(e)
     else if(contains(mousePos.x, mousePos.y, rightBtn))
     {
       moveActiveBlock("right");
+    }
+    else if(contains(mousePos.x, mousePos.y, downBtn))
+    {
+      moveActiveBlock("down");
     }
     else if(contains(mousePos.x, mousePos.y, upBtn))
     {
