@@ -183,11 +183,17 @@ function moveActiveBlock(mode)
     break;
 
     case "down":
+      var moved = false;
       do{
+        moved = true;
         activeBlock.y++;
       }while(!drawCtx(collisionCtx));
-      activeBlock.y--;
-      drawCtx(collisionCtx);
+
+      if(moved)
+      {
+        activeBlock.y--;
+        drawCtx(collisionCtx);
+      }
     break;
   }
 
