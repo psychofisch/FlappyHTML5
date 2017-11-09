@@ -4,14 +4,14 @@
 var gamePause = true,
     context,
     playWidth = 10,
-    playHeight = 18,
+    playHeight = 20,
     collisionContext,
     freezeContext,
     gameLoopInterval = undefined,
     startFrame = undefined,
     lastFrame = 0,
     stepTime = 0.5,
-    debug = false,
+    debug = true,
     blockSize,
     blockStyles,
     blocks = [],
@@ -20,7 +20,8 @@ var gamePause = true,
     colorBg = 'rgb(196, 207, 161)',
     colorBlock = 'rgb(107, 115, 83)',
     startBtn, leftBtn, rightBtn, downBtn, upBtn, escBtn,
-    viewportOffset;//for mouse input on positioned viewport
+    viewportOffset,//for mouse input on positioned viewport
+    update = true;
 
 function togglePause()
 {
@@ -37,8 +38,11 @@ function showStartBtn()
   context.fillRect(startBtn.x, startBtn.y, startBtn.width, startBtn.height);
   context.fillStyle = colorBg;
   context.textBaseline = "hanging";
-  context.font = startBtn.height + "px Monospace";
-  context.fillText("START", startBtn.x, startBtn.y);
+  context.font = startBtn.height + 'px "VT323", monospace';
+  var offset = {};
+  offset.x = (startBtn.width - context.measureText("START").width) * 0.5;
+  offset.y = 0;
+  context.fillText("START", startBtn.x + offset.x, startBtn.y + offset.y);
   context.restore();
 }
 
@@ -62,17 +66,21 @@ function drawControls()
     this.ctx.fillRect(upBtn.x, upBtn.y, upBtn.width, upBtn.height);
     this.ctx.fillRect(escBtn.x, escBtn.y, escBtn.width, escBtn.height);
 
-    var offset;
+    var offset = {};
     this.ctx.fillStyle = "rgba(255,255,255,0.5)";
     this.ctx.textBaseline = "hanging";
-    this.ctx.font = leftBtn.height + "px Monospace";
-    offset = this.ctx.measureText("←").width;
-    this.ctx.fillText("←", leftBtn.x + (leftBtn.width - offset) * 0.5, leftBtn.y);
-    this.ctx.fillText("→", rightBtn.x + (leftBtn.width - offset) * 0.5, rightBtn.y);
-    offset = this.ctx.measureText("↓").width;
-    this.ctx.fillText("↓", downBtn.x + (leftBtn.width - offset) * 0.5, downBtn.y + 5);
-    this.ctx.fillText("↑", upBtn.x + (leftBtn.width - offset) * 0.5, upBtn.y + 5);
-    this.ctx.fillText("X", escBtn.x + (leftBtn.width - offset) * 0.5, escBtn.y + 5);
+    this.ctx.font = leftBtn.height + 'px "VT323", monospace';
+    offset.x = (leftBtn.width - this.ctx.measureText("←").width) * 0.5;
+    offset.y = 0;
+    this.ctx.fillText("←", leftBtn.x + offset.x, leftBtn.y + offset.y);
+    this.ctx.fillText("→", rightBtn.x + offset.x, rightBtn.y + offset.y);
+    offset.x = (leftBtn.width - this.ctx.measureText("↓").width) * 0.5;
+    offset.y = 0;
+    this.ctx.fillText("↓", downBtn.x + offset.x, downBtn.y + offset.y);
+    this.ctx.fillText("↑", upBtn.x + offset.x, upBtn.y + offset.y);
+    offset.x = (leftBtn.width - this.ctx.measureText("X").width) * 0.5;
+    offset.y = 0;
+    this.ctx.fillText("X", escBtn.x + offset.x, escBtn.y + offset.y);
     this.ctx.restore();
   }
 
@@ -292,6 +300,8 @@ function drawCtx(ctx)
   ctx.fill(activeBlock.mesh);
   ctx.restore();
 
+  update = true;
+
   return doesCollide();
 }
 
@@ -509,6 +519,7 @@ function gameLoop(deltaTime)
         togglePause();
         return;
       }
+
       drawCtx(freezeContext);
       isARowFull();
       blocks[blocks.length] = createTetrisBlock(Math.floor(Math.random()*7));
@@ -518,10 +529,14 @@ function gameLoop(deltaTime)
     this.counter = 0;
   }
 
-  context.save();
-  context.scale(blockSize, blockSize);
-  context.drawImage(collisionCtx.canvas, 0, 0);
-  context.restore();
+  if(update)
+  {
+    context.save();
+    context.scale(blockSize, blockSize);
+    context.drawImage(collisionCtx.canvas, 0, 0);
+    context.restore();
 
-  drawControls();
+    drawControls();
+    update = false;
+  }
 }
