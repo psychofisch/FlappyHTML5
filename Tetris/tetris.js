@@ -516,6 +516,11 @@ function gameLoop(deltaTime)
       activeBlock.y--;
       if(drawCtx(collisionCtx))
       {
+        context.save();
+        context.scale(blockSize, blockSize);
+        context.drawImage(collisionCtx.canvas, 0, 0);
+        context.restore();
+        
         togglePause();
         return;
       }
