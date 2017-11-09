@@ -56,31 +56,40 @@ function drawControls()
     if(debug)
       console.log("preparing UI canvas");
 
+    var offset = {};
     this.canvas = document.createElement('canvas');
     this.canvas.height = context.canvas.height;
     this.canvas.width = context.canvas.height;
     this.ctx = this.canvas.getContext('2d');
 
     this.ctx.save();
-    this.ctx.fillStyle = "rgba(0,0,0,0.3)";
-    this.ctx.fillRect(leftBtn.x, leftBtn.y, leftBtn.width, leftBtn.height);
-    this.ctx.fillRect(rightBtn.x, rightBtn.y, rightBtn.width, rightBtn.height);
-    this.ctx.fillRect(downBtn.x, downBtn.y, downBtn.width, downBtn.height);
-    this.ctx.fillRect(upBtn.x, upBtn.y, upBtn.width, upBtn.height);
-    this.ctx.fillRect(escBtn.x, escBtn.y, escBtn.width, escBtn.height);
 
-    var offset = {};
+    if(navigator.userAgent.match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile/i))
+    {
+      this.ctx.fillStyle = "rgba(0,0,0,0.3)";
+      this.ctx.fillRect(leftBtn.x, leftBtn.y, leftBtn.width, leftBtn.height);
+      this.ctx.fillRect(rightBtn.x, rightBtn.y, rightBtn.width, rightBtn.height);
+      this.ctx.fillRect(downBtn.x, downBtn.y, downBtn.width, downBtn.height);
+      this.ctx.fillRect(upBtn.x, upBtn.y, upBtn.width, upBtn.height);
+
+      this.ctx.fillStyle = "rgba(255,255,255,0.5)";
+      this.ctx.textBaseline = "hanging";
+      this.ctx.font = leftBtn.height + 'px "VT323", monospace';
+      offset.x = (leftBtn.width - this.ctx.measureText("←").width) * 0.5;
+      offset.y = 0;
+      this.ctx.fillText("←", leftBtn.x + offset.x, leftBtn.y + offset.y);
+      this.ctx.fillText("→", rightBtn.x + offset.x, rightBtn.y + offset.y);
+      offset.x = (leftBtn.width - this.ctx.measureText("↓").width) * 0.5;
+      offset.y = 0;
+      this.ctx.fillText("↓", downBtn.x + offset.x, downBtn.y + offset.y);
+      this.ctx.fillText("↑", upBtn.x + offset.x, upBtn.y + offset.y);
+    }
+
+    this.ctx.fillStyle = "rgba(0,0,0,0.3)";
+    this.ctx.fillRect(escBtn.x, escBtn.y, escBtn.width, escBtn.height);
     this.ctx.fillStyle = "rgba(255,255,255,0.5)";
     this.ctx.textBaseline = "hanging";
     this.ctx.font = leftBtn.height + 'px "VT323", monospace';
-    offset.x = (leftBtn.width - this.ctx.measureText("←").width) * 0.5;
-    offset.y = 0;
-    this.ctx.fillText("←", leftBtn.x + offset.x, leftBtn.y + offset.y);
-    this.ctx.fillText("→", rightBtn.x + offset.x, rightBtn.y + offset.y);
-    offset.x = (leftBtn.width - this.ctx.measureText("↓").width) * 0.5;
-    offset.y = 0;
-    this.ctx.fillText("↓", downBtn.x + offset.x, downBtn.y + offset.y);
-    this.ctx.fillText("↑", upBtn.x + offset.x, upBtn.y + offset.y);
     offset.x = (leftBtn.width - this.ctx.measureText("X").width) * 0.5;
     offset.y = 0;
     this.ctx.fillText("X", escBtn.x + offset.x, escBtn.y + offset.y);
