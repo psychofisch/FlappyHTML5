@@ -11,6 +11,7 @@ var gamePause = true,
     startFrame = undefined,
     lastFrame = 0,
     stepTime = 0.5,
+    counter = 0,
     debug = true,
     blockSize,
     blockStyles,
@@ -28,7 +29,9 @@ function togglePause()
   if(debug)
     console.log("PAUSE!");
   gamePause = !gamePause;
-  showStartBtn();
+
+  if(gamePause)
+    showStartBtn();
 }
 
 function showStartBtn()
@@ -121,6 +124,8 @@ function startGame()
   viewport.off("click");
   viewport.click("click", click);
 
+  counter = stepTime;
+  update = true;
   togglePause();
 }
 
@@ -150,6 +155,11 @@ function click(e)
     }
     else if(contains(mousePos.x, mousePos.y, escBtn))
     {
+      context.save();
+      context.scale(blockSize, blockSize);
+      context.drawImage(collisionCtx.canvas, 0, 0);
+      context.restore();
+
       togglePause();
     }
 
@@ -454,7 +464,14 @@ function init(){
 
       case "Escape":
         if(gamePause == false)
+        {
+          context.save();
+          context.scale(blockSize, blockSize);
+          context.drawImage(collisionCtx.canvas, 0, 0);
+          context.restore();
+
           togglePause();
+        }
       break;
     }
   });
@@ -503,12 +520,9 @@ function gameLoop(deltaTime)
   if(gamePause)
     return;
 
-  if(this.counter == undefined)
-    this.counter = 0;
+  counter += deltaTime;
 
-  this.counter += deltaTime;
-
-  if(this.counter >= stepTime)
+  if(counter >= stepTime)
   {
     activeBlock.y++;
     if(drawCtx(collisionCtx))
@@ -520,7 +534,7 @@ function gameLoop(deltaTime)
         context.scale(blockSize, blockSize);
         context.drawImage(collisionCtx.canvas, 0, 0);
         context.restore();
-        
+
         togglePause();
         return;
       }
@@ -531,7 +545,7 @@ function gameLoop(deltaTime)
       activeBlock = blocks[blocks.length - 1];
     }
 
-    this.counter = 0;
+    counter = 0;
   }
 
   if(update)
