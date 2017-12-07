@@ -116,7 +116,7 @@ private:
 
     //Update Projection and Model Matrix
     void calcModelMatrix();
-    void calcSceneParams(unsigned int w, unsigned int h);
+    void calcProjectionMatrix(unsigned int w, unsigned int h);
 
     //Rendering Variables
     const EGLContext mEglContext;

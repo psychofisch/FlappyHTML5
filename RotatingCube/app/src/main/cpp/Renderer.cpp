@@ -34,6 +34,7 @@ Renderer::~Renderer() {
     glDeleteProgram(mProgram);
 }
 
+///Setup Vertex Buffer and OpenGl Context
 bool Renderer::init() {
     mProgram = createProgram(VERTEX_SHADER, FRAGMENT_SHADER);
     if (!mProgram)
@@ -55,14 +56,16 @@ bool Renderer::init() {
     return true;
 }
 
+//Reset Viewport and ProjectionMatrix
 void Renderer::resize(int w, int h) {
-    calcSceneParams(w,h);
+    calcProjectionMatrix(w, h);
 
     mLastFrameNs = 0;
 
     glViewport(0, 0, w, h);
 }
 
+//Update, Flush and Render
 void Renderer::render() {
     step();
 
@@ -72,6 +75,7 @@ void Renderer::render() {
     checkGlError("Renderer::render");
 }
 
+//Add Rotation and Update ModelMatrix
 void Renderer::step() {
     timespec now;
     clock_gettime(CLOCK_MONOTONIC, &now);
@@ -86,6 +90,7 @@ void Renderer::step() {
     mLastFrameNs = nowNs;
 }
 
+//Draw Cube
 void Renderer::draw() {
     glUseProgram(mProgram);
 
@@ -100,6 +105,7 @@ void Renderer::draw() {
     glDrawArrays(GL_TRIANGLES, 0, VERTEX_PER_CUBE);
 }
 
+//Check for OpenGl Errors
 bool Renderer::checkGlError(const char* funcName) {
     GLint err = glGetError();
     if (err != GL_NO_ERROR) {
@@ -109,6 +115,7 @@ bool Renderer::checkGlError(const char* funcName) {
     return false;
 }
 
+//Create Sub-Shader
 GLuint Renderer::createShader(GLenum shaderType, const char* src) {
     GLuint shader = glCreateShader(shaderType);
     if (!shader) {
@@ -140,6 +147,7 @@ GLuint Renderer::createShader(GLenum shaderType, const char* src) {
     return shader;
 }
 
+//Create Shader-Program
 GLuint Renderer::createProgram(const char* vtxSrc, const char* fragSrc) {
     GLuint vtxShader = 0;
     GLuint fragShader = 0;
@@ -186,6 +194,7 @@ GLuint Renderer::createProgram(const char* vtxSrc, const char* fragSrc) {
     return program;
 }
 
+//Calculate ModelMatrix
 void Renderer::calcModelMatrix() {
     const glm::mat4 scale = glm::scale(glm::mat4(1), mScale);
     const glm::mat4 translation = glm::translate(glm::mat4(1), mOffset);
@@ -194,7 +203,8 @@ void Renderer::calcModelMatrix() {
     mModelMatrix = translation * rotation * scale;
 }
 
-void Renderer::calcSceneParams(unsigned int w, unsigned int h) {
+//Calculate ProjectionMatrix
+void Renderer::calcProjectionMatrix(unsigned int w, unsigned int h) {
     float aspectRatio = (float) w / (float) h;
     mProjectMatrix = glm::perspective(45.0f, aspectRatio, 0.1f, 10.0f);
 }
