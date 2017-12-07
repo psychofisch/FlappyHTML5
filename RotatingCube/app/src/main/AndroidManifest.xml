@@ -22,7 +22,7 @@
       android:fullBackupContent="false"
       android:icon="@mipmap/ic_launcher"
       android:label="RotatingCube">
-    <activity android:name="krustyfishgl.rotatingcube.GLES3JNIActivity"
+    <activity android:name="krustyfishgl.rotatingcube.GLES2JNIActivity"
               android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
               android:launchMode="singleTask"
               android:configChanges="orientation|keyboardHidden">

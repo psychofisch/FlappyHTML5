@@ -19,17 +19,17 @@
 #include <string.h>
 #include <time.h>
 
-#include "gles3jni.h"
+#include "gles2jni.h"
 
 
 extern "C" {
-    JNIEXPORT void JNICALL Java_krustyfishgl_rotatingcube_GLES3JNILib_init(JNIEnv* env, jobject obj);
-    JNIEXPORT void JNICALL Java_krustyfishgl_rotatingcube_GLES3JNILib_resize(JNIEnv* env, jobject obj, jint width, jint height);
-    JNIEXPORT void JNICALL Java_krustyfishgl_rotatingcube_GLES3JNILib_step(JNIEnv* env, jobject obj);
+    JNIEXPORT void JNICALL Java_krustyfishgl_rotatingcube_GLES2JNILib_init(JNIEnv* env, jobject obj);
+    JNIEXPORT void JNICALL Java_krustyfishgl_rotatingcube_GLES2JNILib_resize(JNIEnv* env, jobject obj, jint width, jint height);
+    JNIEXPORT void JNICALL Java_krustyfishgl_rotatingcube_GLES2JNILib_step(JNIEnv* env, jobject obj);
 };
 
 JNIEXPORT void JNICALL
-Java_krustyfishgl_rotatingcube_GLES3JNILib_init(JNIEnv* env, jobject obj) {
+Java_krustyfishgl_rotatingcube_GLES2JNILib_init(JNIEnv* env, jobject obj) {
     if (g_renderer) {
         delete g_renderer;
         g_renderer = NULL;
@@ -48,14 +48,14 @@ Java_krustyfishgl_rotatingcube_GLES3JNILib_init(JNIEnv* env, jobject obj) {
 }
 
 JNIEXPORT void JNICALL
-Java_krustyfishgl_rotatingcube_GLES3JNILib_resize(JNIEnv* env, jobject obj, jint width, jint height) {
+Java_krustyfishgl_rotatingcube_GLES2JNILib_resize(JNIEnv* env, jobject obj, jint width, jint height) {
     if (g_renderer) {
         g_renderer->resize(width, height);
     }
 }
 
 JNIEXPORT void JNICALL
-Java_krustyfishgl_rotatingcube_GLES3JNILib_step(JNIEnv* env, jobject obj) {
+Java_krustyfishgl_rotatingcube_GLES2JNILib_step(JNIEnv* env, jobject obj) {
     if (g_renderer) {
         g_renderer->render();
     }

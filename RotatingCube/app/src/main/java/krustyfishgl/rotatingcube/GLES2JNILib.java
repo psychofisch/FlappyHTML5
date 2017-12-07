@@ -16,26 +16,15 @@
 
 package krustyfishgl.rotatingcube;
 
-import android.app.Activity;
-import android.os.Bundle;
+// Wrapper for native library
 
-public class GLES3JNIActivity extends Activity {
+public class GLES2JNILib {
 
-    GLES3JNIView mView;
+     static {
+          System.loadLibrary("gles2jni");
+     }
 
-    @Override protected void onCreate(Bundle icicle) {
-        super.onCreate(icicle);
-        mView = new GLES3JNIView(getApplication());
-        setContentView(mView);
-    }
-
-    @Override protected void onPause() {
-        super.onPause();
-        mView.onPause();
-    }
-
-    @Override protected void onResume() {
-        super.onResume();
-        mView.onResume();
-    }
+     public static native void init();
+     public static native void resize(int width, int height);
+     public static native void step();
 }
