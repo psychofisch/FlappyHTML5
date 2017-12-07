@@ -51,6 +51,11 @@ bool Renderer::init() {
     glGenBuffers(1, &mVB);
     glBindBuffer(GL_ARRAY_BUFFER, mVB);
     glBufferData(GL_ARRAY_BUFFER, sizeof(CUBE), &CUBE[0], GL_STATIC_DRAW);
+    glVertexAttribPointer(mPosAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)offsetof(Vertex, pos));
+    glVertexAttribPointer(mColorAttrib, 4, GL_FLOAT, GL_TRUE, sizeof(Vertex), (const GLvoid*)offsetof(Vertex, rgba));
+    glEnableVertexAttribArray(mPosAttrib);
+    glEnableVertexAttribArray(mColorAttrib);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -98,14 +103,10 @@ void Renderer::draw() {
     glUseProgram(mProgram);
 
     glBindBuffer(GL_ARRAY_BUFFER, mVB);
-    glVertexAttribPointer(mPosAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)offsetof(Vertex, pos));
-    glVertexAttribPointer(mColorAttrib, 4, GL_FLOAT, GL_TRUE, sizeof(Vertex), (const GLvoid*)offsetof(Vertex, rgba));
-    glEnableVertexAttribArray(mPosAttrib);
-    glEnableVertexAttribArray(mColorAttrib);
-
     glUniformMatrix4fv(mModelMatrixUniform, 1, GL_FALSE, glm::value_ptr(mModelMatrix));
     glUniformMatrix4fv(mProjMatrixUniform, 1, GL_FALSE, glm::value_ptr(mProjectMatrix));
     glDrawArrays(GL_TRIANGLES, 0, VERTEX_PER_CUBE);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 //Check for OpenGl Errors
