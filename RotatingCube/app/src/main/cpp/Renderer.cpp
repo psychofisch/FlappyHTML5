@@ -14,8 +14,8 @@ Renderer::Renderer()
             mColorAttrib(-1),
             mModelMatrixUniform(-1),
             mProjMatrixUniform(-1),
-            mOffset(0,0,-2),
-            mScale(0.5f)
+            mOffset(0,0,-5),
+            mScale(1)
 {
     srand (time(NULL));
 
@@ -44,7 +44,7 @@ void Renderer::resize(int w, int h) {
 
 void Renderer::calcSceneParams(unsigned int w, unsigned int h) {
     float aspectRatio = (float) w / (float) h;
-    mProjectMatrix = glm::perspective(45.0f, aspectRatio, 0.1f, 5.0f);
+    mProjectMatrix = glm::perspective(45.0f, aspectRatio, 0.1f, 10.0f);
 }
 
 void Renderer::step() {
