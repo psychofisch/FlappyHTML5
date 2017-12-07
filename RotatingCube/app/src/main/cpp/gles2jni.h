@@ -1,3 +1,6 @@
+//
+// Copyright by Fischer Thomas & Radlwimmer Stefan
+//
 
 #include "Renderer.h"
 

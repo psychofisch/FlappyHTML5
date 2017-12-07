@@ -1,4 +1,6 @@
-
+//
+// Copyright by Fischer Thomas & Radlwimmer Stefan
+//
 
 #ifndef ROTATINGCUBE_RENDERER_H
 #define ROTATINGCUBE_RENDERER_H
