@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.gles3jni;
+package krustyfishgl.rotatingcube;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.WindowManager;
-
-import java.io.File;
 
 public class GLES3JNIActivity extends Activity {
 

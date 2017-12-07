@@ -8,7 +8,7 @@ android {
     compileSdkVersion 25
 
     defaultConfig {
-        applicationId 'com.android.gles3jni'
+        applicationId 'krustyfishgl.rotatingcube'
         minSdkVersion "${platformVersion}"
         targetSdkVersion 25
         ndk {

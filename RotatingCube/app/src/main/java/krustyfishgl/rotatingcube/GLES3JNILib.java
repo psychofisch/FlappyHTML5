@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.gles3jni;
+package krustyfishgl.rotatingcube;
 
 // Wrapper for native library
 
