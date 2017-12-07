@@ -4,7 +4,6 @@
 #define ROTATINGCUBE_RENDERER_H
 
 #include <android/log.h>
-#include <math.h>
 
 #define DEBUG 1
 
@@ -16,7 +15,6 @@
 #define ALOGV(...)
 #endif
 
-static const int VERTEX_PER_CUBE = 36;
 
 #include <jni.h>
 #include <stdlib.h>
@@ -35,43 +33,45 @@ struct Vertex {
     GLfloat rgba[4];
 };
 
+static const int VERTEX_PER_CUBE = 36;
+
 const Vertex CUBE[VERTEX_PER_CUBE] = {
-        {{-1.0f,-1.0f,-1.0f},{ 0.583f,  0.771f,  0.014f}},
-        {{-1.0f,-1.0f, 1.0f},{ 0.609f,  0.115f,  0.436f}},
-        {{-1.0f, 1.0f, 1.0f},{ 0.327f,  0.483f,  0.844f}},
-        {{ 1.0f, 1.0f,-1.0f},{ 0.822f,  0.569f,  0.201f}},
-        {{-1.0f,-1.0f,-1.0f},{ 0.583f,  0.771f,  0.014f}},
-        {{-1.0f, 1.0f,-1.0f},{ 0.310f,  0.747f,  0.185f}},
-        {{ 1.0f,-1.0f, 1.0f},{ 0.597f,  0.770f,  0.761f}},
-        {{-1.0f,-1.0f,-1.0f},{ 0.583f,  0.771f,  0.014f}},
-        {{ 1.0f,-1.0f,-1.0f},{ 0.359f,  0.583f,  0.152f}},
-        {{ 1.0f, 1.0f,-1.0f},{ 0.822f,  0.569f,  0.201f}},
-        {{ 1.0f,-1.0f,-1.0f},{ 0.359f,  0.583f,  0.152f}},
-        {{-1.0f,-1.0f,-1.0f},{ 0.583f,  0.771f,  0.014f}},
-        {{-1.0f,-1.0f,-1.0f},{ 0.583f,  0.771f,  0.014f}},
-        {{-1.0f, 1.0f, 1.0f},{ 0.327f,  0.483f,  0.844f}},
-        {{-1.0f, 1.0f,-1.0f},{ 0.310f,  0.747f,  0.185f}},
-        {{ 1.0f,-1.0f, 1.0f},{ 0.597f,  0.770f,  0.761f}},
-        {{-1.0f,-1.0f, 1.0f},{ 0.609f,  0.115f,  0.436f}},
-        {{-1.0f,-1.0f,-1.0f},{ 0.583f,  0.771f,  0.014f}},
-        {{-1.0f, 1.0f, 1.0f},{ 0.327f,  0.483f,  0.844f}},
-        {{-1.0f,-1.0f, 1.0f},{ 0.609f,  0.115f,  0.436f}},
-        {{ 1.0f,-1.0f, 1.0f},{ 0.597f,  0.770f,  0.761f}},
-        {{ 1.0f, 1.0f, 1.0f},{ 0.279f,  0.317f,  0.505f}},
-        {{ 1.0f,-1.0f,-1.0f},{ 0.359f,  0.583f,  0.152f}},
-        {{ 1.0f, 1.0f,-1.0f},{ 0.822f,  0.569f,  0.201f}},
-        {{ 1.0f,-1.0f,-1.0f},{ 0.359f,  0.583f,  0.152f}},
-        {{ 1.0f, 1.0f, 1.0f},{ 0.279f,  0.317f,  0.505f}},
-        {{ 1.0f,-1.0f, 1.0f},{ 0.597f,  0.770f,  0.761f}},
-        {{ 1.0f, 1.0f, 1.0f},{ 0.279f,  0.317f,  0.505f}},
-        {{ 1.0f, 1.0f,-1.0f},{ 0.822f,  0.569f,  0.201f}},
-        {{-1.0f, 1.0f,-1.0f},{ 0.310f,  0.747f,  0.185f}},
-        {{ 1.0f, 1.0f, 1.0f},{ 0.279f,  0.317f,  0.505f}},
-        {{-1.0f, 1.0f,-1.0f},{ 0.310f,  0.747f,  0.185f}},
-        {{-1.0f, 1.0f, 1.0f},{ 0.327f,  0.483f,  0.844f}},
-        {{ 1.0f, 1.0f, 1.0f},{ 0.279f,  0.317f,  0.505f}},
-        {{-1.0f, 1.0f, 1.0f},{ 0.327f,  0.483f,  0.844f}},
-        {{ 1.0f,-1.0f, 1.0f},{ 0.597f,  0.770f,  0.761f}}
+        {{-1.0f, -1.0f, -1.0f} , {0.583f, 0.771f, 0.014f}},
+        {{-1.0f, -1.0f,  1.0f} , {0.609f, 0.115f, 0.436f}},
+        {{-1.0f,  1.0f,  1.0f} , {0.327f, 0.483f, 0.844f}},
+        {{ 1.0f,  1.0f, -1.0f} , {0.822f, 0.569f, 0.201f}},
+        {{-1.0f, -1.0f, -1.0f} , {0.583f, 0.771f, 0.014f}},
+        {{-1.0f,  1.0f, -1.0f} , {0.310f, 0.747f, 0.185f}},
+        {{ 1.0f, -1.0f,  1.0f} , {0.597f, 0.770f, 0.761f}},
+        {{-1.0f, -1.0f, -1.0f} , {0.583f, 0.771f, 0.014f}},
+        {{ 1.0f, -1.0f, -1.0f} , {0.359f, 0.583f, 0.152f}},
+        {{ 1.0f,  1.0f, -1.0f} , {0.822f, 0.569f, 0.201f}},
+        {{ 1.0f, -1.0f, -1.0f} , {0.359f, 0.583f, 0.152f}},
+        {{-1.0f, -1.0f, -1.0f} , {0.583f, 0.771f, 0.014f}},
+        {{-1.0f, -1.0f, -1.0f} , {0.583f, 0.771f, 0.014f}},
+        {{-1.0f,  1.0f,  1.0f} , {0.327f, 0.483f, 0.844f}},
+        {{-1.0f,  1.0f, -1.0f} , {0.310f, 0.747f, 0.185f}},
+        {{ 1.0f, -1.0f,  1.0f} , {0.597f, 0.770f, 0.761f}},
+        {{-1.0f, -1.0f,  1.0f} , {0.609f, 0.115f, 0.436f}},
+        {{-1.0f, -1.0f, -1.0f} , {0.583f, 0.771f, 0.014f}},
+        {{-1.0f,  1.0f,  1.0f} , {0.327f, 0.483f, 0.844f}},
+        {{-1.0f, -1.0f,  1.0f} , {0.609f, 0.115f, 0.436f}},
+        {{ 1.0f, -1.0f,  1.0f} , {0.597f, 0.770f, 0.761f}},
+        {{ 1.0f,  1.0f,  1.0f} , {0.279f, 0.317f, 0.505f}},
+        {{ 1.0f, -1.0f, -1.0f} , {0.359f, 0.583f, 0.152f}},
+        {{ 1.0f,  1.0f, -1.0f} , {0.822f, 0.569f, 0.201f}},
+        {{ 1.0f, -1.0f, -1.0f} , {0.359f, 0.583f, 0.152f}},
+        {{ 1.0f,  1.0f,  1.0f} , {0.279f, 0.317f, 0.505f}},
+        {{ 1.0f, -1.0f,  1.0f} , {0.597f, 0.770f, 0.761f}},
+        {{ 1.0f,  1.0f,  1.0f} , {0.279f, 0.317f, 0.505f}},
+        {{ 1.0f,  1.0f, -1.0f} , {0.822f, 0.569f, 0.201f}},
+        {{-1.0f,  1.0f, -1.0f} , {0.310f, 0.747f, 0.185f}},
+        {{ 1.0f,  1.0f,  1.0f} , {0.279f, 0.317f, 0.505f}},
+        {{-1.0f,  1.0f, -1.0f} , {0.310f, 0.747f, 0.185f}},
+        {{-1.0f,  1.0f,  1.0f} , {0.327f, 0.483f, 0.844f}},
+        {{ 1.0f,  1.0f,  1.0f} , {0.279f, 0.317f, 0.505f}},
+        {{-1.0f,  1.0f,  1.0f} , {0.327f, 0.483f, 0.844f}},
+        {{ 1.0f, -1.0f,  1.0f} , {0.597f, 0.770f, 0.761f}}
 };
 
 static const char VERTEX_SHADER[] =
@@ -97,22 +97,28 @@ static const char FRAGMENT_SHADER[] =
 class Renderer {
 public:
     Renderer();
-    virtual ~Renderer();
+    ~Renderer();
+
+    // Public Library Interface
     bool init();
     void resize(int w, int h);
     void render();
 
 private:
+    //GameLoop
+    void step();
+    void draw();
 
+    //OpenGl Helper Methods
     bool checkGlError(const char* funcName);
     GLuint createShader(GLenum shaderType, const char* src);
     GLuint createProgram(const char* vtxSrc, const char* fragSrc);
-    void draw();
 
+    //Update Projection and Model Matrix
     void calcModelMatrix();
     void calcSceneParams(unsigned int w, unsigned int h);
-    void step();
 
+    //Rendering Variables
     const EGLContext mEglContext;
     GLuint mProgram;
     GLuint mVB;
@@ -121,13 +127,16 @@ private:
     GLint mModelMatrixUniform;
     GLint mProjMatrixUniform;
 
+    //Rotation Variables
     glm::vec3 mAngularVelocity;
     glm::quat mRotation;
-
     uint64_t mLastFrameNs;
+
+    //Rendering Matrices
     glm::mat4 mProjectMatrix;
     glm::mat4 mModelMatrix;
 
+    //Static Positioning Parameters
     const glm::vec3 mOffset;
     const glm::vec3 mScale;
 };

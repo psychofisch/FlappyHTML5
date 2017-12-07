@@ -34,6 +34,27 @@ Renderer::~Renderer() {
     glDeleteProgram(mProgram);
 }
 
+bool Renderer::init() {
+    mProgram = createProgram(VERTEX_SHADER, FRAGMENT_SHADER);
+    if (!mProgram)
+        return false;
+
+    mPosAttrib = glGetAttribLocation(mProgram, "pos");
+    mColorAttrib = glGetAttribLocation(mProgram, "color");
+    mModelMatrixUniform = glGetUniformLocation(mProgram, "model");
+    mProjMatrixUniform = glGetUniformLocation(mProgram, "projection");
+
+    glGenBuffers(1, &mVB);
+    glBindBuffer(GL_ARRAY_BUFFER, mVB);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(CUBE), &CUBE[0], GL_STATIC_DRAW);
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+
+    ALOGV("Using OpenGL ES 2.0 renderer");
+    return true;
+}
+
 void Renderer::resize(int w, int h) {
     calcSceneParams(w,h);
 
@@ -42,9 +63,13 @@ void Renderer::resize(int w, int h) {
     glViewport(0, 0, w, h);
 }
 
-void Renderer::calcSceneParams(unsigned int w, unsigned int h) {
-    float aspectRatio = (float) w / (float) h;
-    mProjectMatrix = glm::perspective(45.0f, aspectRatio, 0.1f, 10.0f);
+void Renderer::render() {
+    step();
+
+    glClearColor(0.2f, 0.2f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    draw();
+    checkGlError("Renderer::render");
 }
 
 void Renderer::step() {
@@ -59,15 +84,6 @@ void Renderer::step() {
 
     calcModelMatrix();
     mLastFrameNs = nowNs;
-}
-
-void Renderer::render() {
-    step();
-
-    glClearColor(0.2f, 0.2f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    draw();
-    checkGlError("Renderer::render");
 }
 
 void Renderer::draw() {
@@ -170,32 +186,15 @@ GLuint Renderer::createProgram(const char* vtxSrc, const char* fragSrc) {
     return program;
 }
 
-bool Renderer::init() {
-    mProgram = createProgram(VERTEX_SHADER, FRAGMENT_SHADER);
-    if (!mProgram)
-        return false;
-    mPosAttrib = glGetAttribLocation(mProgram, "pos");
-    mColorAttrib = glGetAttribLocation(mProgram, "color");
-    mModelMatrixUniform = glGetUniformLocation(mProgram, "model");
-    mProjMatrixUniform = glGetUniformLocation(mProgram, "projection");
-
-    glGenBuffers(1, &mVB);
-    glBindBuffer(GL_ARRAY_BUFFER, mVB);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(CUBE), &CUBE[0], GL_STATIC_DRAW);
-
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-
-    ALOGV("Using OpenGL ES 2.0 renderer");
-    return true;
-}
-
 void Renderer::calcModelMatrix() {
-    glm::mat4 scale(1.0f);
-    scale = glm::scale(scale, mScale);
-    glm::mat4 translation(1.0f);
-    translation = glm::translate(translation, mOffset);
-    glm::mat4 rotation = glm::toMat4(glm::normalize(mRotation));
+    const glm::mat4 scale = glm::scale(glm::mat4(1), mScale);
+    const glm::mat4 translation = glm::translate(glm::mat4(1), mOffset);
+    const glm::mat4 rotation = glm::toMat4(glm::normalize(mRotation));
 
     mModelMatrix = translation * rotation * scale;
+}
+
+void Renderer::calcSceneParams(unsigned int w, unsigned int h) {
+    float aspectRatio = (float) w / (float) h;
+    mProjectMatrix = glm::perspective(45.0f, aspectRatio, 0.1f, 10.0f);
 }

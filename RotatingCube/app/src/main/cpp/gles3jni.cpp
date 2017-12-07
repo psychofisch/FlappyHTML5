@@ -28,12 +28,6 @@ extern "C" {
     JNIEXPORT void JNICALL Java_krustyfishgl_rotatingcube_GLES3JNILib_step(JNIEnv* env, jobject obj);
 };
 
-#if !defined(DYNAMIC_ES3)
-static GLboolean gl3stubInit() {
-    return GL_TRUE;
-}
-#endif
-
 JNIEXPORT void JNICALL
 Java_krustyfishgl_rotatingcube_GLES3JNILib_init(JNIEnv* env, jobject obj) {
     if (g_renderer) {
