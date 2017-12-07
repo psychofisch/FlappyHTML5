@@ -6,19 +6,6 @@
 #include <android/log.h>
 #include <math.h>
 
-#if DYNAMIC_ES3
-#include "gl3stub.h"
-#else
-// Include the latest possible header file( GL version header )
-#if __ANDROID_API__ >= 24
-#include <GLES3/gl32.h>
-#elif __ANDROID_API__ >= 21
-#include <GLES3/gl31.h>
-#else
-#include <GLES3/gl3.h>
-#endif
-#endif
-
 #define DEBUG 1
 
 #define LOG_TAG "GLES3JNI"
@@ -29,14 +16,14 @@
 #define ALOGV(...)
 #endif
 
-#define TWO_PI (2.0 * M_PI)
-#define VERTEX_PER_CUBE 36
+static const int VERTEX_PER_CUBE = 36;
 
 #include <jni.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <EGL/egl.h>
+#include <GLES3/gl32.h>
 
 #include <math.h>
 #include "include/glm/detail/type_mat.hpp"
