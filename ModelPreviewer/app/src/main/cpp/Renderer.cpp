@@ -9,12 +9,12 @@
 
 Renderer::Renderer()
         :   mLastFrameNs(0),
-            mAngularVelocity(0, 1, 0),
             mEglContext(eglGetCurrentContext()),
             mProgram(0),
             mVB(0),
+            mVertexCount(0),
             mPosAttrib(-1),
-            mColorAttrib(-1),
+            mTexCoordAttrib(-1),
             mModelMatrixUniform(-1),
             mProjMatrixUniform(-1),
             mScaleFactor(1)
@@ -35,18 +35,9 @@ bool Renderer::init() {
         return false;
 
     mPosAttrib = glGetAttribLocation(mProgram, "pos");
-    mColorAttrib = glGetAttribLocation(mProgram, "color");
+    mTexCoordAttrib = glGetAttribLocation(mProgram, "uv");
     mModelMatrixUniform = glGetUniformLocation(mProgram, "model");
     mProjMatrixUniform = glGetUniformLocation(mProgram, "projection");
-
-    glGenBuffers(1, &mVB);
-    glBindBuffer(GL_ARRAY_BUFFER, mVB);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(CUBE), &CUBE[0], GL_STATIC_DRAW);
-    glVertexAttribPointer(mPosAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)offsetof(Vertex, pos));
-    glVertexAttribPointer(mColorAttrib, 4, GL_FLOAT, GL_TRUE, sizeof(Vertex), (const GLvoid*)offsetof(Vertex, rgba));
-    glEnableVertexAttribArray(mPosAttrib);
-    glEnableVertexAttribArray(mColorAttrib);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -71,7 +62,7 @@ void Renderer::render() {
     glClearColor(0.2f, 0.2f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     draw();
-    checkGlError("Renderer::render");
+    glCheckError();
 }
 
 //Add Rotation and Update ModelMatrix
@@ -85,36 +76,34 @@ void Renderer::step() {
         //update here?
     }
 
-    calcModelMatrix();
+    if (mNextModel)
+        LoadModel();
+
     mLastFrameNs = nowNs;
 }
 
 //Draw Cube
 void Renderer::draw() {
+    if (mVertexCount == 0)
+        return;
+
     glUseProgram(mProgram);
+    glCheckError();
 
     glBindBuffer(GL_ARRAY_BUFFER, mVB);
     glUniformMatrix4fv(mModelMatrixUniform, 1, GL_FALSE, glm::value_ptr(mModelMatrix));
     glUniformMatrix4fv(mProjMatrixUniform, 1, GL_FALSE, glm::value_ptr(mProjectMatrix));
-    glDrawArrays(GL_TRIANGLES, 0, VERTEX_PER_CUBE);
+    glCheckError();
+    glDrawArrays(GL_TRIANGLES, 0, mVertexCount);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-//Check for OpenGl Errors
-bool Renderer::checkGlError(const char* funcName) {
-    GLint err = glGetError();
-    if (err != GL_NO_ERROR) {
-        ALOGE("GL error after %s(): 0x%08x\n", funcName, err);
-        return true;
-    }
-    return false;
+    glCheckError();
 }
 
 //Create Sub-Shader
 GLuint Renderer::createShader(GLenum shaderType, const char* src) {
     GLuint shader = glCreateShader(shaderType);
     if (!shader) {
-        checkGlError("glCreateShader");
+        glCheckError();
         return 0;
     }
     glShaderSource(shader, 1, &src, NULL);
@@ -159,7 +148,7 @@ GLuint Renderer::createProgram(const char* vtxSrc, const char* fragSrc) {
 
     program = glCreateProgram();
     if (!program) {
-        checkGlError("glCreateProgram");
+        glCheckError();
         goto exit;
     }
     glAttachShader(program, vtxShader);
@@ -199,7 +188,7 @@ void Renderer::calcModelMatrix() {
 }
 
 //Calculate ProjectionMatrix
-void Renderer::calcProjectionMatrix(unsigned int w, unsigned int h) {
+void Renderer::calcProjectionMatrix(int w, int h) {
     float aspectRatio = (float) w / (float) h;
     mProjectMatrix = glm::perspective(45.0f, aspectRatio, 0.1f, 10.0f);
 }
@@ -215,4 +204,44 @@ void Renderer::rotate(float rotateX, float rotateY) {
     mRotation = glm::normalize(glm::quat(glm::vec3(-rotateY, -rotateX, 1) * mRotationSpeed) * mRotation);
 
     calcModelMatrix();
+}
+
+void Renderer::setModel(Model *model) {
+    mNextModel = model;
+}
+
+void Renderer::LoadModel() {
+//#define ALWAYS_CUBE
+#ifdef ALWAYS_CUBE
+    mNextModel->VertexCount = VERTEX_PER_CUBE;
+    delete(mNextModel->VertexData);
+    mNextModel->VertexData = new ModelVertex[mNextModel->VertexCount];
+    memcpy(mNextModel->VertexData, CUBE, mNextModel->VertexCount * sizeof(ModelVertex));
+#endif
+
+    mVertexCount = mNextModel->VertexCount;
+    glDeleteBuffers(1, &mVB);
+    glCheckError();
+
+    glGenBuffers(1, &mVB);
+    glBindBuffer(GL_ARRAY_BUFFER, mVB);
+    glBufferData(GL_ARRAY_BUFFER, mVertexCount * sizeof(ModelVertex), mNextModel->VertexData, GL_STATIC_DRAW);
+    glCheckError();
+    glVertexAttribPointer(mPosAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(ModelVertex), (const GLvoid*)offsetof(ModelVertex, pos));
+    glCheckError();
+    glVertexAttribPointer(mTexCoordAttrib, 2, GL_FLOAT, GL_TRUE, sizeof(ModelVertex), (const GLvoid*)offsetof(ModelVertex, uv));
+    glCheckError();
+    glEnableVertexAttribArray(mPosAttrib);
+    glEnableVertexAttribArray(mTexCoordAttrib);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glCheckError();
+
+    delete(mNextModel);
+    mNextModel = nullptr;
+
+    mScaleFactor = 1;
+    mRotation = glm::quat();
+    calcModelMatrix();
+
+    glCheckError();
 }

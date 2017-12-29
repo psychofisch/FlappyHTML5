@@ -18,6 +18,8 @@ package krustyfishgl.modelpreviewer;
 
 // Wrapper for native library
 
+import android.content.res.AssetManager;
+
 public class GLES2JNILib {
 
      static {
@@ -25,6 +27,7 @@ public class GLES2JNILib {
      }
 
      public static native void init();
+     public static native void load(AssetManager assetManager, String fileName);
      public static native void resize(int width, int height);
      public static native void step();
      public static native void zoom(float zoom);

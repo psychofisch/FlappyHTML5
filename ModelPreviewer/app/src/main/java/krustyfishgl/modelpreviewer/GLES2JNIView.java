@@ -22,12 +22,18 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
+import java.util.Arrays;
+import java.util.List;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 class GLES2JNIView extends GLSurfaceView {
     private static final String TAG = "GLES2JNI";
     private static final boolean DEBUG = true;
+
+    private List<String> mFileNames = Arrays.asList("cube.obj", "speer.obj");
+    private int mFileIndex = -1;
 
     private ScaleGestureDetector mScaleDetector;
     private GestureDetector  mRotateDetector;
@@ -49,6 +55,13 @@ class GLES2JNIView extends GLSurfaceView {
 
     public void onRotate(float rotateX, float rotateY) {
         GLES2JNILib.rotate(rotateX, rotateY);
+    }
+
+    public void onLoadNext() {
+        ++mFileIndex;
+        mFileIndex %= mFileNames.size();
+
+        GLES2JNILib.load(getContext().getAssets(), mFileNames.get(mFileIndex));
     }
 
     private static class Renderer implements GLSurfaceView.Renderer {
@@ -79,18 +92,16 @@ class GLES2JNIView extends GLSurfaceView {
             return true;
         }
 
-        /*@Override
-        public boolean onFling(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            onRotate(distanceX, distanceY);
-
-            return true;
-        }*/
-
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
             onRotate(distanceX, distanceY);
 
             return true;
+        }
+
+        @Override
+        public void onLongPress(MotionEvent e) {
+            onLoadNext();
         }
     }
 

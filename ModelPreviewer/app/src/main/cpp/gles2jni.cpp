@@ -6,12 +6,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
+#include "ModelLoader.h"
 
 #include "gles2jni.h"
 
 
 extern "C" {
     JNIEXPORT void JNICALL Java_krustyfishgl_modelpreviewer_GLES2JNILib_init(JNIEnv* env, jobject obj);
+    JNIEXPORT void JNICALL Java_krustyfishgl_modelpreviewer_GLES2JNILib_load(JNIEnv* env, jobject obj, jobject jAssetManager, jstring jFileName);
     JNIEXPORT void JNICALL Java_krustyfishgl_modelpreviewer_GLES2JNILib_resize(JNIEnv* env, jobject obj, jint width, jint height);
     JNIEXPORT void JNICALL Java_krustyfishgl_modelpreviewer_GLES2JNILib_step(JNIEnv* env, jobject obj);
     JNIEXPORT void JNICALL Java_krustyfishgl_modelpreviewer_GLES2JNILib_zoom(JNIEnv* env, jobject obj, jfloat zoom);
@@ -34,6 +38,21 @@ Java_krustyfishgl_modelpreviewer_GLES2JNILib_init(JNIEnv* env, jobject obj) {
     if (!g_renderer->init()) {
         delete g_renderer;
         g_renderer = NULL;
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_krustyfishgl_modelpreviewer_GLES2JNILib_load(JNIEnv* env, jobject obj, jobject jAssetManager, jstring jFileName) {
+    if (g_renderer) {
+        AAssetManager* assetManager = AAssetManager_fromJava(env, jAssetManager);
+
+        const char *fileName = env->GetStringUTFChars(jFileName, NULL ) ;
+
+        Model* model = ModelLoader::Load(assetManager, fileName);
+
+        env->ReleaseStringUTFChars(jFileName, fileName);
+
+        g_renderer->setModel(model);
     }
 }
 
