@@ -6,6 +6,8 @@
 
 #include "include/glm/ext.hpp"
 #include "include/glm/gtc/matrix_transform.hpp"
+#include "TextureETC1.h"
+#include "Helper.h"
 
 Renderer::Renderer()
         :   mLastFrameNs(0),
@@ -17,7 +19,8 @@ Renderer::Renderer()
             mTexCoordAttrib(-1),
             mModelMatrixUniform(-1),
             mProjMatrixUniform(-1),
-            mScaleFactor(1)
+            mScaleFactor(1),
+            mTextureID(0)
 {
 }
 
@@ -34,10 +37,11 @@ bool Renderer::init() {
     if (!mProgram)
         return false;
 
-    mPosAttrib = glGetAttribLocation(mProgram, "pos");
-    mTexCoordAttrib = glGetAttribLocation(mProgram, "uv");
-    mModelMatrixUniform = glGetUniformLocation(mProgram, "model");
-    mProjMatrixUniform = glGetUniformLocation(mProgram, "projection");
+    mPosAttrib = glGetAttribLocation(mProgram, "aPos");
+    mTexCoordAttrib = glGetAttribLocation(mProgram, "aTexCoordinate");
+    mModelMatrixUniform = glGetUniformLocation(mProgram, "uModel");
+    mProjMatrixUniform = glGetUniformLocation(mProgram, "uProjection");
+    mTextureUniform = glGetUniformLocation(mProgram, "uTexture");
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -76,9 +80,6 @@ void Renderer::step() {
         //update here?
     }
 
-    if (mNextModel)
-        LoadModel();
-
     mLastFrameNs = nowNs;
 }
 
@@ -89,6 +90,10 @@ void Renderer::draw() {
 
     glUseProgram(mProgram);
     glCheckError();
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, mTextureID);
+    glUniform1i(mTextureUniform, 1);
 
     glBindBuffer(GL_ARRAY_BUFFER, mVB);
     glUniformMatrix4fv(mModelMatrixUniform, 1, GL_FALSE, glm::value_ptr(mModelMatrix));
@@ -193,6 +198,7 @@ void Renderer::calcProjectionMatrix(int w, int h) {
     mProjectMatrix = glm::perspective(45.0f, aspectRatio, 0.1f, 10.0f);
 }
 
+//Add new zoom factor
 void Renderer::zoom(float zoom) {
     // Don't let the object get too small or too large.
     mScaleFactor = std::max(mMinScaleFactor, std::min(mScaleFactor * std::pow(zoom, mScaleSpeed), mMaxScaleFactor));
@@ -200,32 +206,28 @@ void Renderer::zoom(float zoom) {
     calcModelMatrix();
 }
 
+//Add new rotation
 void Renderer::rotate(float rotateX, float rotateY) {
     mRotation = glm::normalize(glm::quat(glm::vec3(-rotateY, -rotateX, 1) * mRotationSpeed) * mRotation);
 
     calcModelMatrix();
 }
 
+//Copy Model data to GPU
 void Renderer::setModel(Model *model) {
-    mNextModel = model;
-}
-
-void Renderer::LoadModel() {
-//#define ALWAYS_CUBE
-#ifdef ALWAYS_CUBE
-    mNextModel->VertexCount = VERTEX_PER_CUBE;
-    delete(mNextModel->VertexData);
-    mNextModel->VertexData = new ModelVertex[mNextModel->VertexCount];
-    memcpy(mNextModel->VertexData, CUBE, mNextModel->VertexCount * sizeof(ModelVertex));
-#endif
-
-    mVertexCount = mNextModel->VertexCount;
+    //Clear old data
     glDeleteBuffers(1, &mVB);
+    glDeleteTextures(1, &mTextureID);
+
+    //Allocate new data
+    glGenBuffers(1, &mVB);
+    mTextureID = model->TextureID;
+    mVertexCount = model->VertexCount;
     glCheckError();
 
-    glGenBuffers(1, &mVB);
+    //Setup vbo
     glBindBuffer(GL_ARRAY_BUFFER, mVB);
-    glBufferData(GL_ARRAY_BUFFER, mVertexCount * sizeof(ModelVertex), mNextModel->VertexData, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, mVertexCount * sizeof(ModelVertex), model->VertexData, GL_STATIC_DRAW);
     glCheckError();
     glVertexAttribPointer(mPosAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(ModelVertex), (const GLvoid*)offsetof(ModelVertex, pos));
     glCheckError();
@@ -236,9 +238,10 @@ void Renderer::LoadModel() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glCheckError();
 
-    delete(mNextModel);
-    mNextModel = nullptr;
+    //Delete data struct
+    delete(model);
 
+    //reset model matrix
     mScaleFactor = 1;
     mRotation = glm::quat();
     calcModelMatrix();

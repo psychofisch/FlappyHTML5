@@ -11,6 +11,7 @@
 #include "ModelLoader.h"
 
 #include "gles2jni.h"
+#include "TextureETC1.h"
 
 
 extern "C" {
@@ -47,8 +48,16 @@ Java_krustyfishgl_modelpreviewer_GLES2JNILib_load(JNIEnv* env, jobject obj, jobj
         AAssetManager* assetManager = AAssetManager_fromJava(env, jAssetManager);
 
         const char *fileName = env->GetStringUTFChars(jFileName, NULL ) ;
+        char modelFile[256] = "Models/", textureFile[256] = "Textures/";
 
-        Model* model = ModelLoader::Load(assetManager, fileName);
+        strcat(modelFile, fileName);
+
+        size_t fileLength = strlen(fileName);
+        strncat(textureFile, fileName, fileLength - 4);
+        strcat(textureFile, ".pkm");
+
+        Model* model = ModelLoader::Load(assetManager, modelFile);
+        model->TextureID = TextureETC1::load(assetManager, textureFile);
 
         env->ReleaseStringUTFChars(jFileName, fileName);
 

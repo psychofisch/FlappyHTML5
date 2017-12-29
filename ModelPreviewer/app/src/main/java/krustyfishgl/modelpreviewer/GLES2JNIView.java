@@ -17,11 +17,14 @@
 package krustyfishgl.modelpreviewer;
 
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.opengl.GLSurfaceView;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -31,8 +34,10 @@ import javax.microedition.khronos.opengles.GL10;
 class GLES2JNIView extends GLSurfaceView {
     private static final String TAG = "GLES2JNI";
     private static final boolean DEBUG = true;
+    private static AssetManager assets = null;
+    private Renderer renderer = null;
 
-    private List<String> mFileNames = Arrays.asList("cube.obj", "speer.obj");
+    private String[] mFileNames;
     private int mFileIndex = -1;
 
     private ScaleGestureDetector mScaleDetector;
@@ -44,9 +49,21 @@ class GLES2JNIView extends GLSurfaceView {
         // supporting OpenGL ES 2.0 or later backwards-compatible versions.
         setEGLConfigChooser(8, 8, 8, 0, 16, 0);
         setEGLContextClientVersion(2);
-        setRenderer(new Renderer());
+        renderer = new Renderer();
+        setRenderer(renderer);
         mScaleDetector = new ScaleGestureDetector(context, new ScaleListener());
         mRotateDetector = new GestureDetector(context, new RotateListener());
+        assets = getContext().getAssets();
+
+        FindAllModels();
+    }
+
+    private void FindAllModels() {
+        try {
+            mFileNames = assets.list("Models");
+        } catch (IOException e) {
+            //TODO: CRITICAL ERROR!
+        }
     }
 
     public void onZoom(float zoom) {
@@ -59,9 +76,14 @@ class GLES2JNIView extends GLSurfaceView {
 
     public void onLoadNext() {
         ++mFileIndex;
-        mFileIndex %= mFileNames.size();
+        mFileIndex %= mFileNames.length;
 
-        GLES2JNILib.load(getContext().getAssets(), mFileNames.get(mFileIndex));
+        queueEvent(new Runnable() {
+            @Override
+            public void run() {
+                renderer.onLoadNext(assets, mFileNames[mFileIndex]);
+            }
+        });
     }
 
     private static class Renderer implements GLSurfaceView.Renderer {
@@ -75,6 +97,10 @@ class GLES2JNIView extends GLSurfaceView {
 
         public void onSurfaceCreated(GL10 gl, EGLConfig config) {
             GLES2JNILib.init();
+        }
+
+        public void onLoadNext(AssetManager assets, String file){
+            GLES2JNILib.load(assets, file);
         }
     }
 

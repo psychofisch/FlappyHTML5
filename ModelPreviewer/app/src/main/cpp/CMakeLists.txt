@@ -3,7 +3,8 @@ cmake_minimum_required(VERSION 3.4.1)
 add_library(gles2jni SHARED
             gles2jni.cpp
             Renderer.cpp
-            ModelLoader.cpp)
+            ModelLoader.cpp
+            TextureETC1.cpp)
 
 # Include libraries needed for gles2jni lib
 target_link_libraries(gles2jni

@@ -1,3 +1,6 @@
+//
+// Copyright by Fischer Thomas & Radlwimmer Stefan
+//
 
 #include "ModelLoader.h"
 #include "include/glm/vec3.hpp"
@@ -8,8 +11,7 @@
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "include/tiny_obj_loader.h"
-
-
+#include "Helper.h"
 
 Model *ModelLoader::Load(AAssetManager *assetManager, const char *fileName) {
 
@@ -40,7 +42,7 @@ Model *ModelLoader::LoadModelFromObj(AAssetManager *assetManager, const char *fi
 
     if (!ret)
     {
-        std::cout << "Invalid file, please try another one." << std::endl;
+        ALOGE("Cannot open file [%s]", fileName);
         return nullptr;
     }
 

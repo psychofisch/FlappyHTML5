@@ -3,6 +3,7 @@
 //
 
 #include "Renderer.h"
+#include "Helper.h"
 
 static Renderer* g_renderer = NULL;
 

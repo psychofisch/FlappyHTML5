@@ -1,3 +1,6 @@
+//
+// Copyright by Fischer Thomas & Radlwimmer Stefan
+//
 
 #ifndef MODELPREVIEWER_MODEL_H
 #define MODELPREVIEWER_MODEL_H
@@ -7,8 +10,9 @@
 
 class Model {
 public:
-    GLsizei VertexCount;
-    ModelVertex* VertexData;
+    GLint TextureID = 0;
+    GLsizei VertexCount = 0;
+    ModelVertex* VertexData = nullptr;
 };
 
 
