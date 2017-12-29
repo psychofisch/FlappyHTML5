@@ -69,7 +69,31 @@ Model *ModelLoader::LoadModelFromObj(AAssetManager *assetManager, const char *fi
 }
 
 Model *ModelLoader::LoadModelFromBin(AAssetManager *assetManager, const char *fileName) {
-    return nullptr;
+    AAsset* assetFile = AAssetManager_open(assetManager, fileName, AASSET_MODE_BUFFER);
+    if (!assetFile) {
+        ALOGE("Cannot open file [%s]", fileName);
+        return 0;
+    }
+
+    Model* model = new Model();
+
+    const char *buffer = static_cast<const char*>(AAsset_getBuffer(assetFile));
+
+    unsigned int chunkType = static_cast<unsigned int>(*(buffer));
+    buffer+=4;
+    unsigned int chunkSize = static_cast<unsigned int>(*(buffer));
+    buffer+=4;
+    unsigned int sectionSize = static_cast<unsigned int>(*(buffer));
+    buffer+=4;
+
+    model->VertexCount = sectionSize / sizeof(ModelVertex);
+
+    model->VertexData = new ModelVertex[model->VertexCount];
+    memcpy(model->VertexData, buffer, sectionSize);
+
+    AAsset_close(assetFile);
+
+    return model;
 }
 
 bool ModelLoader::LoadObjOnAndroid(AAssetManager *assetManager, const char *fileName, tinyobj::attrib_t *attrib,
