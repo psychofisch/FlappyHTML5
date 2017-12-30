@@ -56,7 +56,7 @@ Model *ModelLoader::LoadModelFromObj(AAssetManager *assetManager, const char *fi
     {
         tinyobj::index_t indices = shape.mesh.indices[vertex];
         const int vertexIndex = 3 * indices.vertex_index; // --> times 3 for float to glm::vec3 conversion
-        const int texCoordIndex = 3 * indices.texcoord_index; // --> times 3 for float to glm::vec3 conversion
+        const int texCoordIndex = 2 * indices.texcoord_index; // --> times 2 for float to glm::vec2 conversion
 
         model->VertexData[vertex] = ModelVertex{glm::vec3(attribs.vertices[vertexIndex + 0],
                                                           attribs.vertices[vertexIndex + 1],
@@ -79,11 +79,11 @@ Model *ModelLoader::LoadModelFromBin(AAssetManager *assetManager, const char *fi
 
     const char *buffer = static_cast<const char*>(AAsset_getBuffer(assetFile));
 
-    unsigned int chunkType = static_cast<unsigned int>(*(buffer));
+    unsigned int chunkType = *reinterpret_cast<const unsigned int*>(buffer);
     buffer+=4;
-    unsigned int chunkSize = static_cast<unsigned int>(*(buffer));
+    unsigned int chunkSize = *reinterpret_cast<const unsigned int*>(buffer);
     buffer+=4;
-    unsigned int sectionSize = static_cast<unsigned int>(*(buffer));
+    unsigned int sectionSize = *reinterpret_cast<const unsigned int*>(buffer);
     buffer+=4;
 
     model->VertexCount = sectionSize / sizeof(ModelVertex);
