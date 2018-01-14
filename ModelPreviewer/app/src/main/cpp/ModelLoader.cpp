@@ -48,9 +48,7 @@ Model *ModelLoader::LoadModelFromObj(AAssetManager *assetManager, const char *fi
 
     tinyobj::shape_t shape = shapes[0];
 
-    Model* model = new Model;
-    model->VertexCount = shape.mesh.indices.size();
-    model->VertexData = new ModelVertex[model->VertexCount];
+    Model* model = new Model(shape.mesh.indices.size());
 
     for (size_t vertex = 0; vertex < model->VertexCount; ++vertex)
     {
@@ -75,8 +73,6 @@ Model *ModelLoader::LoadModelFromBin(AAssetManager *assetManager, const char *fi
         return 0;
     }
 
-    Model* model = new Model();
-
     const char *buffer = static_cast<const char*>(AAsset_getBuffer(assetFile));
 
     unsigned int chunkType = *reinterpret_cast<const unsigned int*>(buffer);
@@ -86,9 +82,7 @@ Model *ModelLoader::LoadModelFromBin(AAssetManager *assetManager, const char *fi
     unsigned int sectionSize = *reinterpret_cast<const unsigned int*>(buffer);
     buffer+=4;
 
-    model->VertexCount = sectionSize / sizeof(ModelVertex);
-
-    model->VertexData = new ModelVertex[model->VertexCount];
+    Model* model = new Model(sectionSize / sizeof(ModelVertex));
     memcpy(model->VertexData, buffer, sectionSize);
 
     AAsset_close(assetFile);
