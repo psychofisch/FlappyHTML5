@@ -10,9 +10,17 @@
 
 class Model {
 public:
+    Model(GLsizei vertexCount)
+        : VertexCount(vertexCount), VertexData(new ModelVertex[VertexCount])
+    { }
+
+    ~Model(){
+        delete[](VertexData);
+    }
+
     GLint TextureID = 0;
-    GLsizei VertexCount = 0;
-    ModelVertex* VertexData = nullptr;
+    const GLsizei VertexCount = 0;
+    ModelVertex* const VertexData = nullptr;
 };
 
 
