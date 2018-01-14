@@ -5,9 +5,11 @@
 #include <jni.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
+//#include <time.h>
+#include <ctime>
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
+#include <android/log.h>
 #include "ModelLoader.h"
 
 #include "gles2jni.h"
@@ -56,7 +58,12 @@ Java_krustyfishgl_modelpreviewer_GLES2JNILib_load(JNIEnv* env, jobject obj, jobj
         strncat(textureFile, fileName, fileLength - 4);
         strcat(textureFile, ".pkm");
 
+        clock_t begin = clock();
         Model* model = ModelLoader::Load(assetManager, modelFile);
+        clock_t end = clock();
+        double elapsedSeconds = double(end - begin) / CLOCKS_PER_SEC;
+        __android_log_print(ANDROID_LOG_DEBUG, "LOADINGTIME", "%s loaded in %f seconds", fileName, elapsedSeconds);
+
         model->TextureID = TextureETC1::load(assetManager, textureFile);
 
         env->ReleaseStringUTFChars(jFileName, fileName);
