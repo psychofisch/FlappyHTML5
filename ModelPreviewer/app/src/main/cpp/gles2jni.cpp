@@ -62,9 +62,10 @@ Java_krustyfishgl_modelpreviewer_GLES2JNILib_load(JNIEnv* env, jobject obj, jobj
         Model* model = ModelLoader::Load(assetManager, modelFile);
         clock_t end = clock();
         double elapsedSeconds = double(end - begin) / CLOCKS_PER_SEC;
-        __android_log_print(ANDROID_LOG_DEBUG, "LOADINGTIME", "%s loaded in %f seconds", fileName, elapsedSeconds);
+        __android_log_print(ANDROID_LOG_DEBUG, "LOADINGTIME", "%1.6f", elapsedSeconds);
 
-        model->TextureID = TextureETC1::load(assetManager, textureFile);
+        model->TextureID = TextureETC1::load(assetManager, "Textures/test.pkm");
+        //model->TextureID = TextureETC1::load(assetManager, textureFile);
 
         env->ReleaseStringUTFChars(jFileName, fileName);
 

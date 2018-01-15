@@ -38,7 +38,7 @@ Model *ModelLoader::LoadModelFromObj(AAssetManager *assetManager, const char *fi
 
     std::string err;
     tinyobj::attrib_t attribs;
-    bool ret = LoadObjOnAndroid(assetManager, fileName, &attribs, &shapes, &err, false);
+    bool ret = LoadObjOnAndroid(assetManager, fileName, &attribs, &shapes, &err, true);
 
     if (!ret)
     {
