@@ -13,6 +13,19 @@
 #include "include/tiny_obj_loader.h"
 #include "Helper.h"
 
+struct membuf: std::streambuf {
+    membuf(char const* base, size_t size) {
+        char* p(const_cast<char*>(base));
+        this->setg(p, p, p + size);
+    }
+};
+struct imemstream: virtual membuf, std::istream {
+    imemstream(char const* base, size_t size)
+            : membuf(base, size)
+            , std::istream(static_cast<std::streambuf*>(this)) {
+    }
+};
+
 Model *ModelLoader::Load(AAssetManager *assetManager, const char *fileName) {
 
     const char* isObj = ".obj";
@@ -66,7 +79,7 @@ Model *ModelLoader::LoadModelFromObj(AAssetManager *assetManager, const char *fi
     return model;
 }
 
-Model *ModelLoader::LoadModelFromBin(AAssetManager *assetManager, const char *fileName) {
+Model* ModelLoader::LoadModelFromBin(AAssetManager *assetManager, const char *fileName) {
     AAsset* assetFile = AAssetManager_open(assetManager, fileName, AASSET_MODE_BUFFER);
     if (!assetFile) {
         ALOGE("Cannot open file [%s]", fileName);
@@ -108,10 +121,11 @@ bool ModelLoader::LoadObjOnAndroid(AAssetManager *assetManager, const char *file
         return false;
     }
 
-    std::string objText(static_cast<const char*>(AAsset_getBuffer(assetFile)));
-    std::stringstream ss(objText);
+    const off_t objSize = AAsset_getLength(assetFile);
+    char* objContent = const_cast<char*>(static_cast<const char*>(AAsset_getBuffer(assetFile)));
+    imemstream memStream(objContent, objSize);
 
-    bool couldRead = tinyobj::LoadObj(attrib, shapes, nullptr, err, &ss, nullptr, trianglulate);
+    bool couldRead = tinyobj::LoadObj(attrib, shapes, nullptr, err, &memStream, nullptr, trianglulate);
 
     AAsset_close(assetFile);
     return couldRead;
