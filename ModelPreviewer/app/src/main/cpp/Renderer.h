@@ -27,6 +27,7 @@ static const char VERTEX_SHADER[] =
         "void main() {\n"
         "    gl_Position = uProjection * uModel * vec4(aPos, 1.0);\n"
         "    vTexCoordinate = aTexCoordinate;\n"
+        "    vTexCoordinate.y = 1.0 - vTexCoordinate.y;\n"
         "}\n";
 
 static const char FRAGMENT_SHADER[] =

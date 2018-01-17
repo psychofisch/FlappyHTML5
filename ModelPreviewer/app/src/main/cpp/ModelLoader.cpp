@@ -29,13 +29,17 @@ struct imemstream: virtual membuf, std::istream {
 Model *ModelLoader::Load(AAssetManager *assetManager, const char *fileName) {
 
     const char* isObj = ".obj";
+    const char* isTri = ".tri";
     const char* isBin = ".bin";
 
     size_t lenstr = strlen(fileName);
     size_t lensuffix = 4;
 
     if (strncmp(fileName + lenstr - lensuffix, isObj, lensuffix) == 0) {
-        return LoadModelFromObj(assetManager, fileName);
+        return LoadModelFromObj(assetManager, fileName, true);
+
+    } else if (strncmp(fileName + lenstr - lensuffix, isTri, lensuffix) == 0) {
+        return LoadModelFromObj(assetManager, fileName, false);
 
     } else if (strncmp(fileName + lenstr - lensuffix, isBin, lensuffix) == 0) {
         return LoadModelFromBin(assetManager, fileName);
@@ -45,13 +49,13 @@ Model *ModelLoader::Load(AAssetManager *assetManager, const char *fileName) {
     }
 }
 
-Model *ModelLoader::LoadModelFromObj(AAssetManager *assetManager, const char *fileName) {
+Model *ModelLoader::LoadModelFromObj(AAssetManager *assetManager, const char *fileName, bool triangulate) {
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
 
     std::string err;
     tinyobj::attrib_t attribs;
-    bool ret = LoadObjOnAndroid(assetManager, fileName, &attribs, &shapes, &err, true);
+    bool ret = LoadObjOnAndroid(assetManager, fileName, &attribs, &shapes, &err, triangulate);
 
     if (!ret)
     {

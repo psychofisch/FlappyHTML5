@@ -13,7 +13,7 @@ class ModelLoader {
 public:
 
     static Model* Load(AAssetManager* assetManager, const char* fileName);
-    static Model *LoadModelFromObj(AAssetManager *assetManager, const char *fileName);
+    static Model *LoadModelFromObj(AAssetManager *assetManager, const char *fileName, bool triangulate = true);
     static Model *LoadModelFromBin(AAssetManager *assetManager, const char *fileName);
 
 private:
